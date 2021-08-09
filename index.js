@@ -2,8 +2,6 @@ var userlatitude = 0;
 var userlongitude = 0;
 var mymap = 0;
 
-
-
 function getLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition);
@@ -12,7 +10,7 @@ function getLocation() {
     }
 }
 
-function reloadNewMap() {
+function loadMap() {
 
     mymap = L.map('mapid').setView([userlatitude, userlongitude], 13);
     console.log(userlatitude)
@@ -118,10 +116,11 @@ function showPosition(position) {
     userlongitude = position.coords.longitude;
     console.log(position.coords.latitude);
     console.log(position.coords.longitude);
-
+    loadMap();
 
 }
 
+getLocation()
 
 
 
