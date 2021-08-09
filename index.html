@@ -6,13 +6,14 @@
     <title>PetsCircle</title>
 
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
         integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
         crossorigin="" />
+
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
         crossorigin=""></script>
@@ -21,12 +22,15 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
 
+
+
     <script defer src="index.js"></script>
+
 
 
     <style>
         .userlogin {
-            display: flex;
+            /* display: flex; */
             align-items: center;
             justify-content: center;
             padding: 10vh;
@@ -35,16 +39,18 @@
 </head>
 
 <body>
-<div class="userlogin">
 
-    <div data-netlify-identity-menu></div>
- 
-    <!-- <div data-netlify-identity-button>Login with Netlify Identity</div> -->
+    <div class="userlogin">
 
-</div>
+        <h1 class="title">You'll need to sign in to use PetsCircle.</h1>
 
 
-    <div id="mapid" style="height: 100vh;"></div>
+        <div data-netlify-identity-menu></div>
+
+    </div>
+
+
+    <div id="mapid" style="height: 75vh; padding: 9rem; z-index: -1;"></div>
 
 
 
