@@ -17,14 +17,31 @@
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
         crossorigin=""></script>
 
-<script defer src="index.js"></script>
+    <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+
+    <script defer src="index.js"></script>
+
+
+    <style>
+        .userlogin {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10vh;
+        }
+    </style>
 </head>
 
 <body>
-    <!-- <button onclick="getLocation()">Get Location</button>
+<div class="userlogin">
 
-    <button onclick="reloadNewMap()">Init</button> -->
+    <div data-netlify-identity-menu></div>
+ 
+    <!-- <div data-netlify-identity-button>Login with Netlify Identity</div> -->
+
+</div>
 
 
     <div id="mapid" style="height: 100vh;"></div>
