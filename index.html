@@ -26,6 +26,11 @@
 
     <script defer src="index.js"></script>
 
+    <script>
+        function onDownloadClick() {
+            alert('The native app has not yet been developed, try again in the future!')
+        }
+    </script>
 
 
     <style>
@@ -40,11 +45,43 @@
 </head>
 
 <body>
+    <nav class="navbar">
+        <div class="container">
+            <div id="navMenu" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item">
+                        Home
+                    </a>
+                </div>
+
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a onclick="onDownloadClick()" class="button is-link">Download App</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero is-info">
+        <div class="hero-body">
+            <p class="title">
+                PetsCircle
+            </p>
+            <p class="subtitle">
+                A web app for pet owners, made by pet owners.
+            </p>
+        </div>
+    </section>
 
     <div class="userlogin">
 
-        <h1 class="title">You'll need to sign in to use PetsCircle.</h1>
-
+        <div class="notification is-warning">
+            <button class="delete"></button>
+            You'll need to <strong>sign in</strong> to use PetsCircle.
+        </div>
 
         <div data-netlify-identity-menu></div>
 
@@ -52,7 +89,46 @@
 
 
     <div id="mapid" style="height: 75vh; padding: 9rem; z-index: 0;"></div>
+    <hr>
 
+    <div class="columns is-centered">
+        <div class="buttons">
+            <div class="column">
+                <button class="button is-primary">I want to donate a pet!</button>
+            </div>
+            <div class="column">
+                <button class="button is-link">I am looking for a pet!</button>
+            </div>
+        </div>
+    </div>
+
+    
+    
+
+
+
+    <hr>
+    <article class="message is-warning">
+        <div class="message-header">
+            <p>Reminder</p>
+            <button class="delete" aria-label="delete"></button>
+        </div>
+        <div class="message-body">
+            PetsCircle is still in Alpha Development, bugs and errors may appear. Feel free to report them <a
+                href="mailto:maguswyvern@gmail.com">here!</a>
+        </div>
+    </article>
+
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+                <strong>PetsCircle</strong> by <a href="https://jgthms.com">Adi Ahmad Danish</a>. The source code is
+                licensed
+                <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content
+                is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+            </p>
+        </div>
+    </footer>
 
 
 

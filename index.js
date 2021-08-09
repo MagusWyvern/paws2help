@@ -12,7 +12,7 @@ function getLocation() {
 
 function loadMap() {
 
-    mymap = L.map('mapid').setView([userlatitude, userlongitude], 13);
+    mymap = L.map('mapid').setView([userlatitude, userlongitude], 15);
     console.log(userlatitude)
     
 
@@ -108,6 +108,8 @@ function loadMap() {
     L.marker([2.713638, 101.965141], { icon: dogIcon }).addTo(mymap).bindPopup("Ms. Cheoo is donating dogs.");
     
     L.marker([2.710209, 101.926174], { icon: birdIcon }).addTo(mymap).bindPopup("En. Adam is looking for birds.");
+
+    L.marker([userlatitude, userlongitude]).addTo(mymap).bindPopup("You are here!");
 }
 
 function showPosition(position) {
