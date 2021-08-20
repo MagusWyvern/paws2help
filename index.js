@@ -51,7 +51,7 @@ function loadMap() {
     // Initialize the custom icons
     
     var dogIcon = L.icon({
-        iconUrl: 'dog-solid.svg',
+        iconUrl: './map-icons/dog-solid.svg',
         shadowUrl: 'shadow.svg',
     
         iconSize: [45, 50], // size of the icon
@@ -62,7 +62,7 @@ function loadMap() {
     });
     
     var catIcon = L.icon({
-        iconUrl: 'cat-solid.svg',
+        iconUrl: './map-icons/cat-solid.svg',
         shadowUrl: 'shadow.svg',
     
         iconSize: [45, 50], // size of the icon
@@ -73,7 +73,7 @@ function loadMap() {
     });
     
     var birdIcon = L.icon({
-        iconUrl: 'dove-solid.svg',
+        iconUrl: './map-icons/dove-solid.svg',
         shadowUrl: 'shadow.svg',
     
         iconSize: [45, 50], // size of the icon
@@ -84,7 +84,7 @@ function loadMap() {
     });
     
     var helpIcon = L.icon({
-        iconUrl: 'paw-solid.svg',
+        iconUrl: './map-icons/paw-solid.svg',
         shadowUrl: 'shadow.svg',
     
         iconSize: [45, 50], // size of the icon
