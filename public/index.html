@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <title>PetsCircle</title>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A web app for pet owners, by pet owners.">
+
+  <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+  <link rel="icon" href="./map-icons/paw-solid.svg">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Faker/3.1.0/faker.min.js" referrerpolicy="no-referrer"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+
+  <!-- <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script> -->
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+
+  <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-firestore.js"></script>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
+      authDomain: "petscircle.firebaseapp.com",
+      projectId: "petscircle",
+      storageBucket: "petscircle.appspot.com",
+      messagingSenderId: "195232543538",
+      appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
+      measurementId: "G-3PVKXCEFW3"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <link rel="manifest" href="manifest.json">
+
+  
+
+  <style>
+    .userlogin {
+      /* display: flex; */
+      align-items: center;
+      justify-content: center;
+      padding: 10vh;
+      z-index: 1;
+    }
+  </style>
+
+  <script>
+
+    // Open the pets modal
+    function choosePetsModal() {
+      document.getElementById("choose-pets").className += " is-active"
+
+    }
+
+    // Functionality of the 'x' button
+    function closePetsModal() {
+      document.getElementById('choose-pets').classList.remove('is-active');
+    }
+
+    // Hide the sign in notif when user is signed in
+    function hideSignIn() {
+
+    }
+
+  </script>
+
+
+
+</head>
+
+<body>
+  <nav class="navbar is-mobile">
+    <div class="container">
+      <div id="navMenu" class="navbar-menu">
+        <div class="navbar-start">
+          <a class="navbar-item">
+            Home
+          </a>
+        </div>
+
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="buttons">
+              <!-- <a id="add-button" class="button is-link">Download App</a> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero is-info">
+    <div class="hero-body">
+      <p class="title">
+        <img src="./map-icons/paw-solid.svg" style="width: 40px; height: 40px;" alt="">
+        PetsCircle
+      </p>
+      <p class="subtitle">
+        A web app for pet owners, made by pet owners.
+      </p>
+    </div>
+  </section>
+
+  <hr>
+
+  <center>
+    <h1 class="title">Install our app!</h1>
+    <a id="add-button" class="button is-link">Download App</a>
+  </center>
+
+
+  <!-- <div class="userlogin">
+
+        <div class="notification is-warning">
+            <button class="delete"></button>
+            You'll need to <strong>sign in</strong> to use PetsCircle.
+        </div>
+
+        <div data-netlify-identity-menu></div>
+
+    </div> -->
+
+  <section id="whenSignedOut">
+
+    <button id="signInBtn">Sign in with Google</button>
+
+  </section>
+
+  <section id="whenSignedIn" hidden="true">
+
+    <div id="userDetails"></div>
+
+    <button id="signOutBtn">Sign Out</button>
+
+  </section>
+
+  <section>
+
+    <h2>My Firestore Things</h2>
+
+    <ul id="thingsList"></ul>
+
+    <button id="createThing">Create a Thing</button>
+
+  </section>
+
+  <div id="mapid" style="height: 75vh; padding: 9rem; z-index: 0; margin: 20vh;"></div>
+
+
+  <hr>
+
+  <center>
+
+
+    <div class="columns is-centered">
+
+
+      </section>
+      <div class="buttons">
+        <div class="column">
+          <button onclick="choosePetsModal()" class="button is-primary modal-button">I want to donate a
+            pet!</button>
+          <div id="choose-pets" class="modal">
+            <div class="modal-background"></div>
+
+
+            <div class="modal-card">
+              <header class="modal-card-head">
+                <p class="modal-card-title">Choose your pets</p>
+                <!-- <button class="delete" aria-label="close"></button> -->
+              </header>
+              <section class="modal-card-body">
+                <div class="modal-content">
+
+                  <i>App is still in Alpha, limited options available.</i>
+                  <!-- Content ... -->
+              </section>
+            </div>
+            <hr>
+            <!-- Any other Bulma elements you want -->
+            <div class="dropdown is-hoverable">
+              <div class="dropdown-trigger">
+                <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
+                  <span>Cat</span>
+                  <span class="icon is-small">
+                    <i class="fas fa-angle-down" aria-hidden="true"></i>
+                  </span>
+                </button>
+              </div>
+              <div class="dropdown-menu" id="dropdown-menu4" role="menu">
+                <div class="dropdown-content">
+                  <div class="dropdown-item">
+                    <a href="">Cats</a>
+                  </div>
+                  <div class="dropdown-item">
+                    <a href="">Dogs</a>
+                  </div>
+                  <div class="dropdown-item">
+                    <a href="">Birds</a>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <div class="dropdown is-hoverable">
+              <div class="dropdown-trigger">
+                <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
+                  <span>Male</span>
+                  <span class="icon is-small">
+                    <i class="fas fa-angle-down" aria-hidden="true"></i>
+                  </span>
+                </button>
+              </div>
+              <div class="dropdown-menu" id="dropdown-menu4" role="menu">
+                <div class="dropdown-content">
+                  <div class="dropdown-item">
+                    <a href="">Male</a>
+                  </div>
+                  <div class="dropdown-item">
+                    <a href="">Female</a>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <button onclick="closePetsModal()" class="modal-close is-large" aria-label="close"></button>
+          </div>
+
+        </div>
+        <div class="column">
+          <button class="button is-link">I am looking for a pet!</button>
+        </div>
+      </div>
+    </div>
+  </center>
+
+
+
+
+
+
+  <hr>
+  <article class="message is-warning">
+    <div class="message-header">
+      <p>Reminder</p>
+      <button class="delete" aria-label="delete"></button>
+    </div>
+    <div class="message-body">
+      PetsCircle is still in Alpha Development, bugs and errors may appear. Feel free to report them <a
+        href="mailto:maguswyvern@gmail.com">here!</a>
+    </div>
+  </article>
+
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+        <strong>PetsCircle</strong> by <a href="https://github.com/MagusWyvern">Adi Ahmad Danish</a>. The source
+        code is
+        licensed
+        <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>. The website content
+        is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+      </p>
+    </div>
+  </footer>
+
+
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js');
+    }
+  </script>
+<!-- 
+<script src="index.js"></script> -->
+
+  <script src="app.js"></script>
+</body>
+
+</html>
