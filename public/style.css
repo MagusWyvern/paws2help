@@ -1,0 +1,16 @@
+body {
+    background-color: #8CFBDE;
+}
+
+.hero is-info{
+    background-color: #06BA63;
+}
+
+.footer {
+    background-color: #8CFBDE;
+}
+
+#add-button {
+    background-color: #06BA63;
+    width: 25vw;
+}

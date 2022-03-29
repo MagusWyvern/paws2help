@@ -2,10 +2,21 @@ var userlatitude = 0;
 var userlongitude = 0;
 var mymap = 0;
 
+mymap = L.map('mapid').setView([3.140853, 101.693207], 13);
+
+L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    maxZoom: 18,
+    id: 'mapbox/streets-v11',
+    tileSize: 512,
+    zoomOffset: -1,
+    accessToken: 'pk.eyJ1IjoibWFndXN3eXZlcm4iLCJhIjoiY2tzNGFweDNrMDFpMzJwbWxpZmlmMHhmciJ9.Itc6X_zrrrRfUj7GwwXP8w'
+}).addTo(mymap);
+
 function getLocation() {
 
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition);
+        navigator.geolocation.getCurrentPosition(showPosition());
     } else {
         alert('Geolocation is not supported by this browser.');
     }
@@ -13,16 +24,7 @@ function getLocation() {
 
 function loadMap() {
 
-    mymap = L.map('mapid').setView([userlatitude, userlongitude], 15);
-
-    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        maxZoom: 18,
-        id: 'mapbox/streets-v11',
-        tileSize: 512,
-        zoomOffset: -1,
-        accessToken: 'pk.eyJ1IjoibWFndXN3eXZlcm4iLCJhIjoiY2tzNGFweDNrMDFpMzJwbWxpZmlmMHhmciJ9.Itc6X_zrrrRfUj7GwwXP8w'
-    }).addTo(mymap);
+    mymap.setView([userlatitude, userlongitude], 10);
 
     // Circle marker, used for stray animals
 
@@ -123,7 +125,7 @@ function loadMap() {
     L.marker([4.448272, 102.689209], { icon: birdIcon }).addTo(mymap).bindPopup("En. Adam is looking for birds.");
 
 
-    L.marker([userlatitude, userlongitude]).addTo(mymap).bindPopup("You are here!");
+
 }
 
 function showPosition(position) {
@@ -132,18 +134,12 @@ function showPosition(position) {
     userlongitude = position.coords.longitude;
 
     // Debugging
-    // console.log(position.coords.latitude);
-    // console.log(position.coords.longitude);
+    console.log(position.coords.latitude);
+    console.log(position.coords.longitude);
 
     loadMap();
 
-
-
 }
-
-
-// Get user location on arrival
-getLocation();
 
 // Handle PWA installation
 
@@ -176,13 +172,28 @@ window.addEventListener('beforeinstallprompt', (e) => {
     });
 });
 
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+        currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+}
 
-//Get coords by finding the center of the embedded map
+function periodicUpdateUserLocation() {
+    L.marker([mymap.getCenter().lat, mymap.getCenter().lng]).addTo(mymap);
+}
 
+while (true) {
+    periodicUpdateUserLocation();
+    sleep(2000)
+}
 
+const locationButton = document.querySelector('#location-button');
 
+locationButton.onClick = getLocation();
 
-
+// Firebase Implementation starts here
 
 const signInBtn = document.getElementById('signInBtn');
 const signOutBtn = document.getElementById('signOutBtn');
@@ -196,7 +207,7 @@ signInBtn.onclick = () => auth.signInWithPopup(provider);
 
 signOutBtn.onclick = () => auth.signOut();
 const createThing = document.getElementById('createThing');
-const thingsList = document.getElementById('thingsList');
+const coordsList = document.getElementById('coordsList');
 
 const db = firebase.firestore();
 
@@ -224,8 +235,8 @@ auth.onAuthStateChanged(user => {
             const { serverTimestamp } = firebase.firestore.FieldValue;
 
             // Use leaflet to get the center of the map
-            thingsRef.add({ 
-                coords: [mymap.getCenter().lat, mymap.getCenter().lng] ,
+            thingsRef.add({
+                coords: [mymap.getCenter().lat, mymap.getCenter().lng],
                 uid: user.uid,
                 donate: true,
                 createdAt: serverTimestamp()
@@ -244,7 +255,7 @@ auth.onAuthStateChanged(user => {
 
                 });
 
-                thingsList.innerHTML = items.join('');
+                coordsList.innerHTML = items.join('');
 
             });
     } else {
