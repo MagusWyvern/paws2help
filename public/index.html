@@ -9,9 +9,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A web app for pet owners, by pet owners.">
 
-  <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+  <link rel="shortcut icon" type="image/x-icon" href="./icon.png" />
 
-  <link rel="icon" href="./map-icons/paw-solid.svg">
+  <link rel="icon" href="./icon.png">
 
   <link rel="stylesheet" href="./leaflet.css" />
 
@@ -72,7 +72,7 @@
   <section class="hero is-info">
     <div class="hero-body">
       <p class="title">
-        <img src="./map-icons/paw-solid.svg" style="width: 40px; height: 40px;" alt="">
+        <img src="./icon.png" style="width: 40px; height: 40px;" alt="">
         Paws2Help
       </p>
       <p class="subtitle">
@@ -88,45 +88,51 @@
 
       <button id="signInBtn" class="button">Sign in with Google</button><br><br>
 
+      <p>You are currently not logged in! Please log in to list adoptions or donations</p>
+
     </section>
 
-    <section id="whenSignedIn" hidden="true">
+    <section id="whenSignedIn">
 
       <div id="userDetails"></div>
+
+      <h3>Currently your registered locations are:</h3><br>
+
+      <ul id="coordsList"></ul><br>
+
+      <div class="columns">
+
+        <div class="column">
+          <button id="createThing" class="button">Mark a location</button>
+        </div>
+
+        <div class="column">
+          <!-- Set donate to true if tick box is checked-->
+          <p>I am donating <input type="checkbox" id="donate" name="donate" value="true"></p>
+        </div>
+
+      </div>
+
+
+
+      <br> <br> <br>
+
 
       <button id="signOutBtn" class="button">Sign Out</button><br><br>
 
     </section>
 
-    <section>
-      <h3>Currently your registered locations are:</h3><br>
+    <div class="columns">
 
-      <ul id="coordsList"></ul><br>
+      <div class="column">
+        <button id="location-button" class="button" >Get my current location</button><br><br>
+      </div>
 
-      <button id="createThing" class="button">Mark a location</button><br> 
-
-      <!--Set donate to true if tick box is checked-->
-
-      <p>I am donating</p>
-
-      <input type="checkbox" id="donate" name="donate" value="true"><br>
-
-      
-
-    </section>
-
-    <!-- <div class="columns">
-    <div class="column">
-      <button id="location-button" class="button">Get my current location</button><br><br>
+      <!-- <div class="column">
+        <button id="update-center" class="button">Update location to center of map</button>
+      </div> -->
 
     </div>
-
-    <div class="column">
-      <button id="update-center" class="button">Update location to center of map</button>
-
-    </div>
-
-  </div> -->
   </center>
 
 
@@ -171,11 +177,8 @@
   </script>
 
 
-  <script defer src="app.js"></script>
-  <script defer>
-
-
-  </script>
+  <script defer src="./app.js"></script>
+  <script src="./pwa.js"></script>
 </body>
 
 </html>

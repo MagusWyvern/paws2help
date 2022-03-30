@@ -6,5 +6,10 @@
 
 #add-button {
     background-color: #06BA63;
-    width: 25vw;
+    width: 15vw;
+}
+
+#signOutBtn {
+    background-color: rgb(145, 1, 1);
+    width: 10vw;
 }

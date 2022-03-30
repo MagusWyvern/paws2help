@@ -14,6 +14,17 @@ var options = {
     maximumAge: 0
 };
 
+var dogIcon = L.icon({
+    iconUrl: './map-icons/dog-solid.svg',
+    shadowUrl: 'shadow.svg',
+
+    iconSize: [45, 50], // size of the icon
+    shadowSize: [50, 64], // size of the shadow
+    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+    shadowAnchor: [4, 62],  // the same for the shadow
+    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
 var catIcon = L.icon({
     iconUrl: './map-icons/cat-solid.svg',
     shadowUrl: 'shadow.svg',
@@ -25,9 +36,38 @@ var catIcon = L.icon({
     popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+var birdIcon = L.icon({
+    iconUrl: './map-icons/dove-solid.svg',
+    shadowUrl: 'shadow.svg',
+
+    iconSize: [45, 50], // size of the icon
+    shadowSize: [50, 64], // size of the shadow
+    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+    shadowAnchor: [4, 62],  // the same for the shadow
+    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+var helpIcon = L.icon({
+    iconUrl: './map-icons/paw-solid.svg',
+    shadowUrl: 'shadow.svg',
+
+    iconSize: [45, 50], // size of the icon
+    shadowSize: [50, 64], // size of the shadow
+    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+    shadowAnchor: [4, 62],  // the same for the shadow
+    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+var catIcon = L.icon({
+    iconUrl: './map-icons/cat-solid.svg',
+    shadowUrl: 'shadow.svg',
+
+    iconSize: [45, 50], // size of the icon
+    shadowSize: [50, 64], // size of the shadow
+    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+    shadowAnchor: [4, 62],  // the same for the shadow
+    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
 
 mymap = L.map('mapid').setView([3.140853, 101.693207], 13);
 
@@ -39,6 +79,41 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     zoomOffset: -1,
     accessToken: 'pk.eyJ1IjoibWFndXN3eXZlcm4iLCJhIjoiY2tzNGFweDNrMDFpMzJwbWxpZmlmMHhmciJ9.Itc6X_zrrrRfUj7GwwXP8w'
 }).addTo(mymap);
+
+var circle = L.circle([2.707465, 101.946087], {
+    color: 'red',
+    fillColor: '#f03',
+    fillOpacity: 0.5,
+    radius: 100
+}).addTo(mymap);
+
+circle.bindPopup("Stray cats around this area.");
+
+// Veterinar clinics
+
+L.marker([2.734557, 101.951923], { icon: helpIcon }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
+
+L.marker([5.399737, 101.678467], { icon: helpIcon }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
+
+// Cats
+
+L.marker([5.182659, 100.942383], { icon: catIcon }).addTo(mymap).bindPopup("Pn. Aminah is donating cats.");
+
+L.marker([2.320514, 103.117676], { icon: catIcon }).addTo(mymap).bindPopup("En. Adam is looking for cats.");
+
+L.marker([3.734101, 102.365112], { icon: catIcon }).addTo(mymap).bindPopup("En. Adam is looking for cats.");
+
+// Dogs
+
+L.marker([4.985423, 102.414551], { icon: dogIcon }).addTo(mymap).bindPopup("Ms. Cheoo is donating dogs.");
+
+L.marker([4.29493, 102.282715], { icon: dogIcon }).addTo(mymap).bindPopup("Ms. Cheoo is donating dogs.");
+
+// Birds
+
+L.marker([4.174806, 101.535645], { icon: birdIcon }).addTo(mymap).bindPopup("En. Adam is looking for birds.");
+
+L.marker([4.448272, 102.689209], { icon: birdIcon }).addTo(mymap).bindPopup("En. Adam is looking for birds.");
 
 function getLocation() {
 
@@ -63,117 +138,38 @@ function success(position) {
 
 }
 
+function onMapClick(e) {
+    popup
+        .setLatLng(e.latlng)
+        .setContent("You clicked the map at " + e.latlng.toString())
+        .openOn(mymap);
+
+
+}
+
+mymap.on('click', onMapClick);
+
 function error(err) {
     console.warn(`ERROR(${err.code}): ${err.message}`);
 }
 
-function loadMap() {
+function updateMap() {
 
-    mymap.setView([userlatitude, userlongitude], 10);
+    mymap.setView([userlatitude, userlongitude], 8);
 
-    // Circle marker, used for stray animals
-
-    var circle = L.circle([2.707465, 101.946087], {
-        color: 'red',
-        fillColor: '#f03',
-        fillOpacity: 0.5,
-        radius: 100
-    }).addTo(mymap);
-
-    circle.bindPopup("Stray cats around this area.");
-
-    var popup = L.popup();
-
-    // Debugging coords, comment out this section of code for production
-
-    function onMapClick(e) {
-        popup
-            .setLatLng(e.latlng)
-            .setContent("You clicked the map at " + e.latlng.toString())
-            .openOn(mymap);
-    }
-
-    mymap.on('click', onMapClick);
-
-    // Initialize the custom icons
-
-    var dogIcon = L.icon({
-        iconUrl: './map-icons/dog-solid.svg',
-        shadowUrl: 'shadow.svg',
-
-        iconSize: [45, 50], // size of the icon
-        shadowSize: [50, 64], // size of the shadow
-        iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
-        shadowAnchor: [4, 62],  // the same for the shadow
-        popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
-    });
-
-    var catIcon = L.icon({
-        iconUrl: './map-icons/cat-solid.svg',
-        shadowUrl: 'shadow.svg',
-
-        iconSize: [45, 50], // size of the icon
-        shadowSize: [50, 64], // size of the shadow
-        iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
-        shadowAnchor: [4, 62],  // the same for the shadow
-        popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
-    });
-
-    var birdIcon = L.icon({
-        iconUrl: './map-icons/dove-solid.svg',
-        shadowUrl: 'shadow.svg',
-
-        iconSize: [45, 50], // size of the icon
-        shadowSize: [50, 64], // size of the shadow
-        iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
-        shadowAnchor: [4, 62],  // the same for the shadow
-        popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
-    });
-
-    var helpIcon = L.icon({
-        iconUrl: './map-icons/paw-solid.svg',
-        shadowUrl: 'shadow.svg',
-
-        iconSize: [45, 50], // size of the icon
-        shadowSize: [50, 64], // size of the shadow
-        iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
-        shadowAnchor: [4, 62],  // the same for the shadow
-        popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
-    });
-
-    // Add the markers to the map
-
-    // Veterinar clinics
-
-    L.marker([2.734557, 101.951923], { icon: helpIcon }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
-
-    L.marker([5.399737, 101.678467], { icon: helpIcon }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
-
-    // Cats
-
-    L.marker([5.182659, 100.942383], { icon: catIcon }).addTo(mymap).bindPopup("Pn. Aminah is donating cats.");
-
-    L.marker([2.320514, 103.117676], { icon: catIcon }).addTo(mymap).bindPopup("En. Adam is looking for cats.");
-
-    L.marker([3.734101, 102.365112], { icon: catIcon }).addTo(mymap).bindPopup("En. Adam is looking for cats.");
-
-    // Dogs
-
-    L.marker([4.985423, 102.414551], { icon: dogIcon }).addTo(mymap).bindPopup("Ms. Cheoo is donating dogs.");
-
-    L.marker([4.29493, 102.282715], { icon: dogIcon }).addTo(mymap).bindPopup("Ms. Cheoo is donating dogs.");
-
-    // Birds
-
-    L.marker([4.174806, 101.535645], { icon: birdIcon }).addTo(mymap).bindPopup("En. Adam is looking for birds.");
-
-    L.marker([4.448272, 102.689209], { icon: birdIcon }).addTo(mymap).bindPopup("En. Adam is looking for birds.");
-
-
+    // var popup = L.popup();
 
 }
 
+const locationBtn = document.querySelector('#location-button');
 
+if (position.coords.latitude && position.coords.longitude) {
+
+    locationBtn.addEventListener("click", getLocation());
+} else {
+    position.coords.latitude = 1.5;
+    position.coords.longitude = 103.5;
+}
 
 
 // const updateCenter = document.getElementById('update-center');
@@ -211,16 +207,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
     });
 });
 
-const locationBtn = document.querySelector('#location-button');
-
-if (position.coords.latitude && position.coords.longitude) {
-
-    locationBtn.addEventListener("click", getLocation());
-} else {
-    position.coords.latitude = 1.5;
-    position.coords.longitude = 103.5;
-}
-
 // Firebase Implementation starts here
 
 const signInBtn = document.getElementById('signInBtn');
@@ -233,7 +219,7 @@ const provider = new firebase.auth.GoogleAuthProvider();
 
 signInBtn.onclick = () => auth.signInWithPopup(provider);
 
-signOutBtn.onclick = () => auth.signOut();
+signOutBtn.onclick = () => auth.signOut() && location.reload();
 const createThing = document.getElementById('createThing');
 const coordsList = document.getElementById('coordsList');
 
@@ -251,9 +237,10 @@ var markers = new Array();
 auth.onAuthStateChanged(user => {
     if (user) {
         // signed in
-        whenSignedIn.hidden = false;
-        whenSignedOut.hidden = true;
-        signInBtn.hidden = true;
+        whenSignedIn.style.visibility = "visible";
+        whenSignedOut.style.visibility = "hidden";
+        signInBtn.style.visibility = "hidden";
+        signOutBtn.style.display = "block";
         userDetails.innerHTML = `<h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is: ${user.uid}</p><br>`;
 
         // Database Reference
@@ -280,17 +267,12 @@ auth.onAuthStateChanged(user => {
                 // Map results to an array of li elements
 
                 const items = querySnapshot.docs.map(doc => {
-                    
-
 
                     var LamMarker = new L.marker([doc.data().coords[0], doc.data().coords[1]], { icon: catIcon }).bindPopup(`${doc.data().donate ? 'I am donating' : 'I am looking for'} cats.`);
-    
-                    markers.push(LamMarker);
-    
-                    mymap.addLayer(markers[markers.length - 1])
-    
-                    console.log(markers)
 
+                    markers.push(LamMarker);
+
+                    mymap.addLayer(markers[markers.length - 1])
 
                     return `
                     <div class="box">
@@ -313,27 +295,26 @@ auth.onAuthStateChanged(user => {
 
                 coordsList.innerHTML = items.join('');
 
+                console.log(markers)
+
             });
 
-           
     } else {
         // not signed in
-        whenSignedIn.hidden = true;
-        whenSignedOut.hidden = false;
+        whenSignedIn.style.visibility = "hidden";
+        whenSignedOut.style.visibility = "visible";
         userDetails.innerHTML = '';
+        signOutBtn.style.display = "none"
 
         // Unsubscribe when the user signs out
         unsubscribe && unsubscribe();
+
     }
 });
 
 async function deleteDocbyID(button) {
     // Delete a coordinate using the id of the x icon
     id = button.getAttribute('data-docid');
-
-
-    // Also delete the marker that matches the coords in the document by checking it against the markers array
-    // Create separate variables for the latitude and longitude in the document
 
     var docu = await thingsRef.doc(id).get();
 
@@ -348,7 +329,13 @@ async function deleteDocbyID(button) {
         }
     }
 
+    // Make sure the map only shows the markers that are left in the firestore collection
+
+
+
     // Finally, delete the document
     await thingsRef.doc(id).delete();
+
+    location.reload();
 }
 
