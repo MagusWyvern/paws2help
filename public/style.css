@@ -10,6 +10,7 @@
 }
 
 #signOutBtn {
-    background-color: rgb(145, 1, 1);
+    /* background-color: rgb(145, 1, 1); */
+    color: whitesmoke;
     width: 10vw;
 }

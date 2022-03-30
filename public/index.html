@@ -61,7 +61,7 @@
         <div class="navbar-end">
           <div class="navbar-item">
             <div class="buttons">
-              <!-- <a id="add-button" class="button is-link">Download App</a> -->
+              <a id="add-button" class="button is-link">Download App</a>
             </div>
           </div>
         </div>
@@ -72,7 +72,7 @@
   <section class="hero is-info">
     <div class="hero-body">
       <p class="title">
-        <img src="./icon.png" style="width: 40px; height: 40px;" alt="">
+        <img src="./icon.png" style="width: 60px; height: 40px;" alt="">
         Paws2Help
       </p>
       <p class="subtitle">
@@ -103,13 +103,12 @@
       <div class="columns">
 
         <div class="column">
-          <button id="createThing" class="button">Mark a location</button>
+          <p>I am donating <input type="checkbox" id="donate" name="donate" value="true"></p>
+          <p>I am adopting <input type="checkbox" id="adopt" name="adopt" value="true"></p><br>
+          <button id="createThing" class="button is-primary">Mark my location on the map</button>
+          <!-- Set donate to true if tick box is checked-->
         </div>
 
-        <div class="column">
-          <!-- Set donate to true if tick box is checked-->
-          <p>I am donating <input type="checkbox" id="donate" name="donate" value="true"></p>
-        </div>
 
       </div>
 
@@ -118,14 +117,14 @@
       <br> <br> <br>
 
 
-      <button id="signOutBtn" class="button">Sign Out</button><br><br>
+      <button id="signOutBtn" class="button is-danger">Sign Out</button><br><br>
 
     </section>
 
     <div class="columns">
 
       <div class="column">
-        <button id="location-button" class="button" >Get my current location</button><br><br>
+        <button id="location-button" class="button is-success" >Get my current location</button><br><br>
       </div>
 
       <!-- <div class="column">

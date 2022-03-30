@@ -134,8 +134,12 @@ function success(position) {
     console.log(position.coords.latitude);
     console.log(position.coords.longitude);
 
-    loadMap();
+    updateMap();
 
+}
+
+function error(err) {
+    console.warn(`ERROR(${err.code}): ${err.message}`);
 }
 
 function onMapClick(e) {
@@ -149,16 +153,10 @@ function onMapClick(e) {
 
 mymap.on('click', onMapClick);
 
-function error(err) {
-    console.warn(`ERROR(${err.code}): ${err.message}`);
-}
 
 function updateMap() {
 
     mymap.setView([userlatitude, userlongitude], 8);
-
-    // var popup = L.popup();
-
 }
 
 const locationBtn = document.querySelector('#location-button');
@@ -167,45 +165,13 @@ if (position.coords.latitude && position.coords.longitude) {
 
     locationBtn.addEventListener("click", getLocation());
 } else {
-    position.coords.latitude = 1.5;
-    position.coords.longitude = 103.5;
+    console.warn('Unable to get user location')
 }
 
 
 // const updateCenter = document.getElementById('update-center');
 
 // updateCenter.onclick = function () { L.marker([mymap.getCenter().lat, mymap.getCenter().lng]).addTo(mymap) };
-
-// Handle PWA installation
-
-let deferredPrompt;
-const addBtn = document.querySelector('#add-button');
-addBtn.style.display = 'none';
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent Chrome 67 and earlier from automatically showing the prompt
-    e.preventDefault();
-    // Stash the event so it can be triggered later.
-    deferredPrompt = e;
-    // Update UI to notify the user they can add to home screen
-    addBtn.style.display = 'block';
-
-    addBtn.addEventListener('click', (e) => {
-        // hide our user interface that shows our A2HS button
-        addBtn.style.display = 'none';
-        // Show the prompt
-        deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the A2HS prompt');
-            } else {
-                console.log('User dismissed the A2HS prompt');
-            }
-            deferredPrompt = null;
-        });
-    });
-});
 
 // Firebase Implementation starts here
 
