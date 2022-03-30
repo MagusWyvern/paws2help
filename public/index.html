@@ -6,8 +6,10 @@
   <title>Paws2Help</title>
 
   <meta charset="utf-8" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A web app for pet owners, by pet owners.">
+
+  <meta name="description" content="A web app for pet owners, by pet owners">
 
   <link rel="shortcut icon" type="image/x-icon" href="./icon.png" />
 
@@ -23,10 +25,16 @@
 
   <script src="./leaflet.js"></script>
 
+  <link rel="stylesheet" href="./Control.Geocoder.css">
+
+  <script src="./Control.Geocoder.js"></script>
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
 
   <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-firestore.js"></script>
 
   <script>
@@ -43,8 +51,6 @@
   </script>
 
   <link rel="manifest" href="manifest.json">
-
-
 
 </head>
 
@@ -114,7 +120,7 @@
 
 
 
-      <br> <br> <br>
+      <br> <br>
 
 
       <button id="signOutBtn" class="button is-danger">Sign Out</button><br><br>
@@ -124,7 +130,7 @@
     <div class="columns">
 
       <div class="column">
-        <button id="location-button" class="button is-success" >Get my current location</button><br><br>
+        <button id="location-button" class="button is-success">Get my current location</button><br><br>
       </div>
 
       <!-- <div class="column">

@@ -1968,4 +1968,3 @@ var leafletControlGeocoder = (function (exports, L) {
   return exports;
 
 }({}, L));
-//# sourceMappingURL=Control.Geocoder.js.map

@@ -8,6 +8,7 @@ var position = {
         lng: 0
     }
 }
+var popup = L.popup();
 var options = {
     enableHighAccuracy: true,
     timeout: 5000,
@@ -117,12 +118,7 @@ L.marker([4.448272, 102.689209], { icon: birdIcon }).addTo(mymap).bindPopup("En.
 
 function getLocation() {
 
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(success, error, options);
 
-    } else {
-        alert('Geolocation is not supported by this browser.');
-    }
 }
 
 function success(position) {
@@ -147,26 +143,31 @@ function onMapClick(e) {
         .setLatLng(e.latlng)
         .setContent("You clicked the map at " + e.latlng.toString())
         .openOn(mymap);
-
-
 }
 
 mymap.on('click', onMapClick);
 
 
 function updateMap() {
-
-    mymap.setView([userlatitude, userlongitude], 8);
+    mymap.setView([userlatitude, userlongitude], 15);
 }
 
 const locationBtn = document.querySelector('#location-button');
 
-if (position.coords.latitude && position.coords.longitude) {
+locationBtn.addEventListener("click", () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(success, error, options);
 
-    locationBtn.addEventListener("click", getLocation());
-} else {
-    console.warn('Unable to get user location')
-}
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+});
+
+// if (position.coords.latitude && position.coords.longitude) {
+
+// } else {
+//     console.warn('Unable to get user location')
+// }
 
 
 // const updateCenter = document.getElementById('update-center');
@@ -199,6 +200,8 @@ const whenSignedOut = document.getElementById('whenSignedOut');
 const userDetails = document.getElementById('userDetails');
 
 var markers = new Array();
+var addressDisplayName = "Street adress not found, You may delete this address after you've marked a new address";
+var url = 1
 
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -214,6 +217,10 @@ auth.onAuthStateChanged(user => {
 
         createThing.onclick = () => {
 
+            url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${mymap.getCenter().lat}&lon=${mymap.getCenter().lng}&zoom=18&addressdetails=1`;
+
+            fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
+
             const { serverTimestamp } = firebase.firestore.FieldValue;
 
             // Set donate to true if user checked the tickbox
@@ -222,7 +229,8 @@ auth.onAuthStateChanged(user => {
                 coords: [mymap.getCenter().lat, mymap.getCenter().lng],
                 uid: user.uid,
                 donate: document.getElementById('donate').checked,
-                createdAt: serverTimestamp()
+                createdAt: serverTimestamp(),
+                addressName: addressDisplayName,
             });
         }
 
@@ -240,12 +248,39 @@ auth.onAuthStateChanged(user => {
 
                     mymap.addLayer(markers[markers.length - 1])
 
+                    // Use the reverse geocoding API to display it in the list
+
+                    data = {
+                        "place_id": 201144398,
+                        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright",
+                        "osm_type": "way",
+                        "osm_id": 436312094,
+                        "lat": "3.140824522372358",
+                        "lon": "101.69319329201915",
+                        "display_name": "KTM Roundabout, Brickfields, Kuala Lumpur, 50000, Malaysia",
+                        "address":
+                        {
+                            "road": "KTM Roundabout",
+                            "suburb": "Brickfields",
+                            "city": "Kuala Lumpur",
+                            "postcode": "50000",
+                            "country": "Malaysia",
+                            "country_code": "my"
+                        },
+                        "boundingbox": ["3.1407858", "3.1408392", "101.6931628", "101.6934525"]
+                    }
+
+
+
+
                     return `
                     <div class="box">
                         <div class="columns">
 
                             <div class="column">
-                                <li id="${doc.id}">${doc.data().coords[0]} + ${doc.data().coords[1]}</li>
+                                <li id="${doc.id}">Latitude: ${doc.data().coords[0]}, Longitude: ${doc.data().coords[1]}</li>
+                                <strong>${doc.data().addressName.toLocaleString()}</strong> <br>
+                                <small>${doc.data().createdAt.toDate().toLocaleString()}</small>
                             </div>
      
                             <div class="column">
