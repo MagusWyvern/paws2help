@@ -1,6 +1,33 @@
 var userlatitude = 0;
 var userlongitude = 0;
 var mymap = 0;
+var position = {
+    coords:
+    {
+        lat: 0,
+        lng: 0
+    }
+}
+var options = {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0
+};
+
+var catIcon = L.icon({
+    iconUrl: './map-icons/cat-solid.svg',
+    shadowUrl: 'shadow.svg',
+
+    iconSize: [45, 50], // size of the icon
+    shadowSize: [50, 64], // size of the shadow
+    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+    shadowAnchor: [4, 62],  // the same for the shadow
+    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 mymap = L.map('mapid').setView([3.140853, 101.693207], 13);
 
@@ -16,10 +43,28 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 function getLocation() {
 
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition());
+        navigator.geolocation.getCurrentPosition(success, error, options);
+
     } else {
         alert('Geolocation is not supported by this browser.');
     }
+}
+
+function success(position) {
+
+    userlatitude = position.coords.latitude;
+    userlongitude = position.coords.longitude;
+
+    // Debugging
+    console.log(position.coords.latitude);
+    console.log(position.coords.longitude);
+
+    loadMap();
+
+}
+
+function error(err) {
+    console.warn(`ERROR(${err.code}): ${err.message}`);
 }
 
 function loadMap() {
@@ -128,18 +173,12 @@ function loadMap() {
 
 }
 
-function showPosition(position) {
 
-    userlatitude = position.coords.latitude;
-    userlongitude = position.coords.longitude;
 
-    // Debugging
-    console.log(position.coords.latitude);
-    console.log(position.coords.longitude);
 
-    loadMap();
+// const updateCenter = document.getElementById('update-center');
 
-}
+// updateCenter.onclick = function () { L.marker([mymap.getCenter().lat, mymap.getCenter().lng]).addTo(mymap) };
 
 // Handle PWA installation
 
@@ -172,26 +211,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
     });
 });
 
-function sleep(milliseconds) {
-    const date = Date.now();
-    let currentDate = null;
-    do {
-        currentDate = Date.now();
-    } while (currentDate - date < milliseconds);
+const locationBtn = document.querySelector('#location-button');
+
+if (position.coords.latitude && position.coords.longitude) {
+
+    locationBtn.addEventListener("click", getLocation());
+} else {
+    position.coords.latitude = 1.5;
+    position.coords.longitude = 103.5;
 }
-
-function periodicUpdateUserLocation() {
-    L.marker([mymap.getCenter().lat, mymap.getCenter().lng]).addTo(mymap);
-}
-
-while (true) {
-    periodicUpdateUserLocation();
-    sleep(2000)
-}
-
-const locationButton = document.querySelector('#location-button');
-
-locationButton.onClick = getLocation();
 
 // Firebase Implementation starts here
 
@@ -218,14 +246,15 @@ const whenSignedIn = document.getElementById('whenSignedIn');
 const whenSignedOut = document.getElementById('whenSignedOut');
 const userDetails = document.getElementById('userDetails');
 
-console.log(mymap)
+var markers = new Array();
 
 auth.onAuthStateChanged(user => {
     if (user) {
         // signed in
         whenSignedIn.hidden = false;
         whenSignedOut.hidden = true;
-        userDetails.innerHTML = `<h3>Hello ${user.displayName}!</h3> <p>Your User ID is: ${user.uid}</p>`;
+        signInBtn.hidden = true;
+        userDetails.innerHTML = `<h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is: ${user.uid}</p><br>`;
 
         // Database Reference
         thingsRef = db.collection('pet-coords')
@@ -234,11 +263,12 @@ auth.onAuthStateChanged(user => {
 
             const { serverTimestamp } = firebase.firestore.FieldValue;
 
-            // Use leaflet to get the center of the map
+            // Set donate to true if user checked the tickbox
+
             thingsRef.add({
                 coords: [mymap.getCenter().lat, mymap.getCenter().lng],
                 uid: user.uid,
-                donate: true,
+                donate: document.getElementById('donate').checked,
                 createdAt: serverTimestamp()
             });
         }
@@ -250,14 +280,42 @@ auth.onAuthStateChanged(user => {
                 // Map results to an array of li elements
 
                 const items = querySnapshot.docs.map(doc => {
+                    
 
-                    return `<li>${doc.data().coords[0]} + ${doc.data().coords[1]}</li>`
+
+                    var LamMarker = new L.marker([doc.data().coords[0], doc.data().coords[1]], { icon: catIcon }).bindPopup(`${doc.data().donate ? 'I am donating' : 'I am looking for'} cats.`);
+    
+                    markers.push(LamMarker);
+    
+                    mymap.addLayer(markers[markers.length - 1])
+    
+                    console.log(markers)
+
+
+                    return `
+                    <div class="box">
+                        <div class="columns">
+
+                            <div class="column">
+                                <li id="${doc.id}">${doc.data().coords[0]} + ${doc.data().coords[1]}</li>
+                            </div>
+     
+                            <div class="column">
+                                <button data-docid="${doc.id}" id="deleteBtn" class="button" onclick="deleteDocbyID(this)">Delete</button>
+                            </div>
+
+                        </div>
+                    </div>
+                    `;
 
                 });
+
 
                 coordsList.innerHTML = items.join('');
 
             });
+
+           
     } else {
         // not signed in
         whenSignedIn.hidden = true;
@@ -268,4 +326,29 @@ auth.onAuthStateChanged(user => {
         unsubscribe && unsubscribe();
     }
 });
+
+async function deleteDocbyID(button) {
+    // Delete a coordinate using the id of the x icon
+    id = button.getAttribute('data-docid');
+
+
+    // Also delete the marker that matches the coords in the document by checking it against the markers array
+    // Create separate variables for the latitude and longitude in the document
+
+    var docu = await thingsRef.doc(id).get();
+
+    // Loop through the markers array and find the marker that matches the coords of the document
+    for (let i = 0; i < markers.length; i++) {
+        if (markers[i]._latlng.lat == docu.data().coords[0] && markers[i]._latlng.lng == docu.data().coords[1]) {
+            // Remove the marker from the map
+            mymap.removeLayer(markers[i])
+            // Remove the marker from the array
+            markers.splice(i, 1);
+            break;
+        }
+    }
+
+    // Finally, delete the document
+    await thingsRef.doc(id).delete();
+}
 

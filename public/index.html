@@ -13,19 +13,15 @@
 
   <link rel="icon" href="./map-icons/paw-solid.svg">
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-    crossorigin="" />
+  <link rel="stylesheet" href="./leaflet.css" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Faker/3.1.0/faker.min.js" referrerpolicy="no-referrer"></script>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="./all.min.css" />
 
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
-    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-    crossorigin=""></script>
+  <link rel="stylesheet" href="style.css">
+
+  <script src="./leaflet.js"></script>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
 
@@ -48,7 +44,7 @@
 
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="style.css">
+
 
 </head>
 
@@ -87,35 +83,54 @@
 
   <hr>
 
-<center>
-  <section id="whenSignedOut">
-  
-    <button id="signInBtn" class="button">Sign in with Google</button>
-  
-  </section>
-  
-  <section id="whenSignedIn" hidden="true">
-  
-    <div id="userDetails"></div>
-  
-    <button id="signOutBtn" class="button">Sign Out</button>
-  
-  </section>
-  
-  <section>
-    <h3>Currently your registered locations are:</h3>
-  
-    <ul id="coordsList"></ul>
-  
-    <button id="createThing" class="button">Mark a location</button>
-  
-  </section>
-</center>
+  <center>
+    <section id="whenSignedOut">
+
+      <button id="signInBtn" class="button">Sign in with Google</button><br><br>
+
+    </section>
+
+    <section id="whenSignedIn" hidden="true">
+
+      <div id="userDetails"></div>
+
+      <button id="signOutBtn" class="button">Sign Out</button><br><br>
+
+    </section>
+
+    <section>
+      <h3>Currently your registered locations are:</h3><br>
+
+      <ul id="coordsList"></ul><br>
+
+      <button id="createThing" class="button">Mark a location</button><br> 
+
+      <!--Set donate to true if tick box is checked-->
+
+      <p>I am donating</p>
+
+      <input type="checkbox" id="donate" name="donate" value="true"><br>
+
+      
+
+    </section>
+
+    <!-- <div class="columns">
+    <div class="column">
+      <button id="location-button" class="button">Get my current location</button><br><br>
+
+    </div>
+
+    <div class="column">
+      <button id="update-center" class="button">Update location to center of map</button>
+
+    </div>
+
+  </div> -->
+  </center>
 
 
-  <div id="mapid" style="height: 75vh; padding: 9rem; z-index: 0; margin: 20vh;"></div>
-
-  <button id="location-button">Get my current location</button>
+  <div id="mapid" style="height: 75vh; padding: 4rem; z-index: 0; margin: 5vh;"></div>
 
 
   <hr>
@@ -139,7 +154,8 @@
   <footer class="footer">
     <div class="content has-text-centered">
       <p>
-        <strong>Paws2Help</strong> by <a href="https://github.com/MagusWyvern">Adi Ahmad Danish</a> and Muhammad Zaqwan. The source
+        <strong>Paws2Help</strong> by <a href="https://github.com/MagusWyvern">Adi Ahmad Danish</a> and Muhammad Zaqwan.
+        The source
         code is
         licensed
         <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>. The website content
@@ -154,7 +170,12 @@
     }
   </script>
 
-  <script src="app.js"></script>
+
+  <script defer src="app.js"></script>
+  <script defer>
+
+
+  </script>
 </body>
 
 </html>
