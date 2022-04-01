@@ -3,7 +3,7 @@
 
 <head>
 
-  <title>Paws2Help</title>
+  <title>Paws2Help - List Adoptions or Donations for Cats</title>
 
   <meta charset="utf-8" />
 
@@ -82,7 +82,7 @@
         Paws2Help
       </p>
       <p class="subtitle">
-        Paws2Help: A Fundamental Endeavour to Support Stray Cats
+        Paws2Help is a simple web application that allows you to give and adopt cats. We hope to reduce the number of neglected stray cats living in the streets!
       </p>
     </div>
   </section>
@@ -90,11 +90,13 @@
   <hr>
 
   <center>
+
     <section id="whenSignedOut">
 
       <button id="signInBtn" class="button">Sign in with Google</button><br><br>
 
-      <p>You are currently not logged in! Please log in to list adoptions or donations</p>
+      <p>You are currently not logged in! Please log in to view your adoption or donation listings.</p><br>
+      <a href="./privacy-policy.html">Privacy Policy</a>
 
     </section>
 
@@ -106,38 +108,57 @@
 
       <ul id="coordsList"></ul><br>
 
-      <div class="columns">
 
-        <div class="column">
-          <p>I am donating <input type="checkbox" id="donate" name="donate" value="true"></p>
-          <p>I am adopting <input type="checkbox" id="adopt" name="adopt" value="true"></p><br>
+        <div class="column is-full">
+          <button id="location-button" class="button is-success">Set map view to my current location</button><br><br>
+          <p class="description">This requires your permission to use your location data</p><br>
+        </div>
+  
+        <!-- <div class="column">
+          <button id="update-center" class="button">Update location to center of map</button>
+        </div> -->
+
+
+        <div class="column is-full">
+
+          <div class="box">
+
+            <p>Full name</p>
+            <input class="input" type="text" placeholder="Your name" id="creatorName"><br><br>
+  
+            <p>Phone number</p>
+            <input id="creatorPhone" class="input" type="text" placeholder="Your number"><br><br>
+  
+            <p>I am donating pets 📤<input type="checkbox" id="donate" name="donate" value="true"></p><br>
+            <p class="description">I am adopting pets 📥<input type="checkbox" id="adopt" name="adopt" value="true"></p><br>
+
+          </div>
+
+
+          <script defer>
+            donateStatus = ""
+            if(document.getElementById('donate').checked) {
+              donateStatus.innerHTML = `Mark me as donating on the map`
+              
+            } else if(document.getElementById('donate').checked && document.getElementById('adopt').checked) {
+              donateStatus.innerHTML = `Mark me as donating and receiving on the map`
+            } 
+            else {
+              donateStatus.innerHTML = `Mark me as receiving on the map`
+            }
+          </script>
+
+          <p class="description">When you're ready, tap the button to list your current location on the map!</p>
           <button id="createThing" class="button is-primary">Mark my location on the map</button>
-          <!-- Set donate to true if tick box is checked-->
         </div>
 
-
-      </div>
-
-
-
       <br> <br>
-
 
       <button id="signOutBtn" class="button is-danger">Sign Out</button><br><br>
 
     </section>
 
-    <div class="columns">
 
-      <div class="column">
-        <button id="location-button" class="button is-success">Get my current location</button><br><br>
-      </div>
-
-      <!-- <div class="column">
-        <button id="update-center" class="button">Update location to center of map</button>
-      </div> -->
-
-    </div>
   </center>
 
 
@@ -159,6 +180,7 @@
 
   <center>
     <h1 class="title">Install our app!</h1>
+    <p class="subtitle">As development progresses, more features will be available in the mobile version!</p>
     <a id="add-button" class="button is-link">Download App</a>
   </center>
 
@@ -172,6 +194,7 @@
         <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>. The website content
         is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
       </p>
+      <a href="./privacy-policy.html">Privacy Policy</a>
     </div>
   </footer>
 
@@ -183,7 +206,7 @@
 
 
   <script defer src="./app.js"></script>
-  <script src="./pwa.js"></script>
+  <script defer src="./pwa.js"></script>
 </body>
 
 </html>

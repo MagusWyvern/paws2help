@@ -78,7 +78,7 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     id: 'mapbox/streets-v11',
     tileSize: 512,
     zoomOffset: -1,
-    accessToken: 'pk.eyJ1IjoibWFndXN3eXZlcm4iLCJhIjoiY2tzNGFweDNrMDFpMzJwbWxpZmlmMHhmciJ9.Itc6X_zrrrRfUj7GwwXP8w'
+    accessToken: 'pk.eyJ1IjoibWFndXN3eXZlcm4iLCJhIjoiY2tzNGFweDNrMDFpMzJwbWxpZmlmMHhmciJ9.Itc6X_zrrrRfUj7GwwXP8w',
 }).addTo(mymap);
 
 var circle = L.circle([2.707465, 101.946087], {
@@ -163,6 +163,16 @@ locationBtn.addEventListener("click", () => {
     }
 });
 
+function eventFire(el, etype){
+    if (el.fireEvent) {
+      el.fireEvent('on' + etype);
+    } else {
+      var evObj = document.createEvent('Events');
+      evObj.initEvent(etype, true, false);
+      el.dispatchEvent(evObj);
+    }
+  }
+
 // if (position.coords.latitude && position.coords.longitude) {
 
 // } else {
@@ -200,8 +210,9 @@ const whenSignedOut = document.getElementById('whenSignedOut');
 const userDetails = document.getElementById('userDetails');
 
 var markers = new Array();
-var addressDisplayName = "Street adress not found, You may delete this address after you've marked a new address";
+var addressDisplayName = "Street adress not found, you may delete this address";
 var url = 1
+var count = 0
 
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -210,28 +221,43 @@ auth.onAuthStateChanged(user => {
         whenSignedOut.style.visibility = "hidden";
         signInBtn.style.visibility = "hidden";
         signOutBtn.style.display = "block";
-        userDetails.innerHTML = `<h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is: ${user.uid}</p><br>`;
+        userDetails.innerHTML = `<img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br><h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br><p>${user.phoneNumber ? user.phoneNumber : ''}</p>`;
 
         // Database Reference
         thingsRef = db.collection('pet-coords')
 
-        createThing.onclick = () => {
+        async function addPetCoords() {
+            const { serverTimestamp } = firebase.firestore.FieldValue;
 
             url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${mymap.getCenter().lat}&lon=${mymap.getCenter().lng}&zoom=18&addressdetails=1`;
-
-            fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
-
-            const { serverTimestamp } = firebase.firestore.FieldValue;
+        
+            console.info('URL to fetch: ' + url);
+            console.info('Latitude:' + mymap.getCenter().lat);
+            console.info('Longitude:' + mymap.getCenter().lng);
+        
+            await fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
+        
+            console.info('Address: ' + addressDisplayName);
 
             // Set donate to true if user checked the tickbox
 
-            thingsRef.add({
+            await thingsRef.add({
                 coords: [mymap.getCenter().lat, mymap.getCenter().lng],
                 uid: user.uid,
                 donate: document.getElementById('donate').checked,
                 createdAt: serverTimestamp(),
                 addressName: addressDisplayName,
+                creatorName: document.getElementById('creatorName').value,
+                creatorPhone: document.getElementById('creatorPhone').value, 
+                // Grab phone number from form
             });
+        }
+        createThing.onclick = () => {
+
+
+
+            addPetCoords();
+            
         }
 
         // Query
@@ -242,7 +268,7 @@ auth.onAuthStateChanged(user => {
 
                 const items = querySnapshot.docs.map(doc => {
 
-                    var LamMarker = new L.marker([doc.data().coords[0], doc.data().coords[1]], { icon: catIcon }).bindPopup(`${doc.data().donate ? 'I am donating' : 'I am looking for'} cats.`);
+                    var LamMarker = new L.marker([doc.data().coords[0], doc.data().coords[1]], { icon: catIcon }).bindPopup(`${doc.data().donate ? 'I am donating' : 'I am looking for'} cats.<br>${doc.data().addressName}<br>${doc.data().creatorName}<br>${doc.data().creatorPhone}`);
 
                     markers.push(LamMarker);
 
@@ -296,7 +322,7 @@ auth.onAuthStateChanged(user => {
 
                 coordsList.innerHTML = items.join('');
 
-                console.log(markers)
+                console.info('Current markers array list: ' + markers)
 
             });
 
@@ -337,6 +363,6 @@ async function deleteDocbyID(button) {
     // Finally, delete the document
     await thingsRef.doc(id).delete();
 
-    location.reload();
+    // location.reload();
 }
 
