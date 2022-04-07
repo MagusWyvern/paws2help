@@ -193,6 +193,9 @@ var markers = new Array();
 var addressDisplayName = "Street adress not found, you may delete this address";
 var url = 1
 var count = 0
+var markerClusters = L.markerClusterGroup()
+
+mymap.addlayer(markerClusters)
 
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -250,6 +253,10 @@ auth.onAuthStateChanged(user => {
                     markers.push(LamMarker);
 
                     mymap.addLayer(markers[markers.length - 1])
+
+                    markerClusters.addLayer(markers[markers.length - 1])
+
+                    mymap.addLayer(markerClusters)
 
                     // Use the reverse geocoding API to display it in the list
 
