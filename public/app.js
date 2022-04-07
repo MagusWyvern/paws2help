@@ -92,7 +92,7 @@ circle.bindPopup("Stray cats around this area.");
 
 // Veterinar clinics
 
-L.marker([2.734557, 101.951923], { icon: helpIcon }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
+L.marker([2.734557, 101.951923], { icon: helpIcon, draggable: true, autoPan: true }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
 
 L.marker([5.399737, 101.678467], { icon: helpIcon }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
 
@@ -212,8 +212,8 @@ auth.onAuthStateChanged(user => {
             url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${mymap.getCenter().lat}&lon=${mymap.getCenter().lng}&zoom=18&addressdetails=1`;
         
             console.info('URL to fetch: ' + url);
-            console.info('Latitude:' + mymap.getCenter().lat);
-            console.info('Longitude:' + mymap.getCenter().lng);
+            console.info('Latitude to fetch:' + mymap.getCenter().lat);
+            console.info('Longitude to fetch:' + mymap.getCenter().lng);
         
             await fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
         
@@ -228,13 +228,10 @@ auth.onAuthStateChanged(user => {
                 createdAt: serverTimestamp(),
                 addressName: addressDisplayName,
                 creatorName: document.getElementById('creatorName').value,
-                creatorPhone: document.getElementById('creatorPhone').value, 
-                // Grab phone number from form
+                creatorPhone: document.getElementById('creatorPhone').value
             });
         }
         createThing.onclick = () => {
-
-
 
             addPetCoords();
             
@@ -286,7 +283,7 @@ auth.onAuthStateChanged(user => {
                             <div class="column">
                                 <li id="${doc.id}">Latitude: ${doc.data().coords[0]}, Longitude: ${doc.data().coords[1]}</li>
                                 <strong>${doc.data().addressName.toLocaleString()}</strong> <br>
-                                <small>${doc.data().createdAt.toDate().toLocaleString()}</small>
+                                <small>${doc.data().createdAt.toLocaleString()}</small>
                             </div>
      
                             <div class="column">
