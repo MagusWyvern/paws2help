@@ -70,7 +70,7 @@ var catIcon = L.icon({
     popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
-mymap = L.map('mapid').setView([3.140853, 101.693207], 13);
+mymap = L.map('mapid').setView([3.140853, 101.693207], 10);
 
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -143,15 +143,15 @@ locationBtn.addEventListener("click", () => {
     }
 });
 
-function eventFire(el, etype){
+function eventFire(el, etype) {
     if (el.fireEvent) {
-      el.fireEvent('on' + etype);
+        el.fireEvent('on' + etype);
     } else {
-      var evObj = document.createEvent('Events');
-      evObj.initEvent(etype, true, false);
-      el.dispatchEvent(evObj);
+        var evObj = document.createEvent('Events');
+        evObj.initEvent(etype, true, false);
+        el.dispatchEvent(evObj);
     }
-  }
+}
 
 // if (position.coords.latitude && position.coords.longitude) {
 
@@ -168,13 +168,16 @@ function eventFire(el, etype){
 
 const signInBtn = document.getElementById('signInBtn');
 const signOutBtn = document.getElementById('signOutBtn');
+const facebookSignInBtn = document.getElementById('facebookSignInBtn');
 
 const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
+const facebookProvider = new firebase.auth.FacebookAuthProvider();
 
 /// Sign in event handlers
 
 signInBtn.onclick = () => auth.signInWithPopup(provider);
+facebookSignInBtn.onclick = () => auth.signInWithPopup(facebookProvider);
 
 signOutBtn.onclick = () => auth.signOut() && location.reload();
 const createThing = document.getElementById('createThing');
@@ -182,7 +185,7 @@ const coordsList = document.getElementById('coordsList');
 
 const db = firebase.firestore();
 
-let thingsRef;
+let petCoordsRef;
 let unsubscribe;
 
 const whenSignedIn = document.getElementById('whenSignedIn');
@@ -195,7 +198,7 @@ var url = 1
 var count = 0
 var markerClusters = L.markerClusterGroup()
 
-mymap.addlayer(markerClusters)
+mymap.addLayer(markerClusters)
 
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -203,87 +206,70 @@ auth.onAuthStateChanged(user => {
         whenSignedIn.style.visibility = "visible";
         whenSignedOut.style.visibility = "hidden";
         signInBtn.style.visibility = "hidden";
+        facebookSignInBtn.style.visibility = "hidden";
+
         signOutBtn.style.display = "block";
+        whenSignedIn.style.display = "block";
+        whenSignedOut.style.display = "none";
+        signInBtn.style.display = "none";
+        facebookSignInBtn.style.display = "none";
+
+
         userDetails.innerHTML = `<img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br><h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br><p>${user.phoneNumber ? user.phoneNumber : ''}</p>`;
 
         // Database Reference
-        thingsRef = db.collection('pet-coords')
+        petCoordsRef = db.collection('pet-coords')
 
         async function addPetCoords() {
             const { serverTimestamp } = firebase.firestore.FieldValue;
 
             url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${mymap.getCenter().lat}&lon=${mymap.getCenter().lng}&zoom=18&addressdetails=1`;
-        
+
             console.info('URL to fetch: ' + url);
             console.info('Latitude to fetch:' + mymap.getCenter().lat);
             console.info('Longitude to fetch:' + mymap.getCenter().lng);
-        
+
             await fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
-        
+
             console.info('Address: ' + addressDisplayName);
 
             // Set donate to true if user checked the tickbox
 
-            await thingsRef.add({
+            await petCoordsRef.add({
                 coords: [mymap.getCenter().lat, mymap.getCenter().lng],
                 uid: user.uid,
                 donate: document.getElementById('donate').checked,
                 createdAt: serverTimestamp(),
                 addressName: addressDisplayName,
                 creatorName: document.getElementById('creatorName').value,
-                creatorPhone: document.getElementById('creatorPhone').value
+                creatorPhone: document.getElementById('creatorPhone').value,
+                petImage: document.getElementById('petImage').value,
             });
+
+            // Clear the form
+            document.getElementById('creatorName').value = '';
+            document.getElementById('creatorPhone').value = '';
+            document.getElementById('petImage').value = '';
+            document.getElementById('donate').checked = false;
+
+            location.reload()
         }
         createThing.onclick = () => {
 
             addPetCoords();
-            
+
         }
 
         // Query
-        unsubscribe = thingsRef.where('uid', '==', user.uid)
+        unsubscribe = petCoordsRef.where('uid', '==', user.uid)
             .onSnapshot(querySnapshot => {
-
-                // Map results to an array of li elements
 
                 const items = querySnapshot.docs.map(doc => {
 
-                    var LamMarker = new L.marker([doc.data().coords[0], doc.data().coords[1]], { icon: catIcon }).bindPopup(`${doc.data().donate ? 'I am donating' : 'I am looking for'} cats.<br>${doc.data().addressName}<br>${doc.data().creatorName}<br>${doc.data().creatorPhone}`);
-
-                    markers.push(LamMarker);
-
-                    mymap.addLayer(markers[markers.length - 1])
-
-                    markerClusters.addLayer(markers[markers.length - 1])
-
-                    mymap.addLayer(markerClusters)
-
                     // Use the reverse geocoding API to display it in the list
 
-                    data = {
-                        "place_id": 201144398,
-                        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright",
-                        "osm_type": "way",
-                        "osm_id": 436312094,
-                        "lat": "3.140824522372358",
-                        "lon": "101.69319329201915",
-                        "display_name": "KTM Roundabout, Brickfields, Kuala Lumpur, 50000, Malaysia",
-                        "address":
-                        {
-                            "road": "KTM Roundabout",
-                            "suburb": "Brickfields",
-                            "city": "Kuala Lumpur",
-                            "postcode": "50000",
-                            "country": "Malaysia",
-                            "country_code": "my"
-                        },
-                        "boundingbox": ["3.1407858", "3.1408392", "101.6931628", "101.6934525"]
-                    }
-
-
-
-
-                    return `
+                    if (doc.data().uid == user.uid) {
+                        return `
                     <div class="box">
                         <div class="columns">
 
@@ -299,26 +285,64 @@ auth.onAuthStateChanged(user => {
 
                         </div>
                     </div>
-                    `;
+                    `} else {
+                    }
+
+                    ;
 
                 });
-
 
                 coordsList.innerHTML = items.join('');
 
                 console.info('Current markers array list: ' + markers)
 
+                mymap.addLayer(markerClusters)
+
             });
+
+        // ------------
+
+
+        unsubscribe2 = petCoordsRef
+            .onSnapshot(querySnapshot => {
+
+                querySnapshot.docs.map(docs => {
+
+                    var newMarker = new L.marker([docs.data().coords[0], docs.data().coords[1]], { icon: catIcon }).bindPopup(`${docs.data().donate ? 'I am donating' : 'I am looking for'} cats.<br>Adress: ${docs.data().addressName}<br>Name: ${docs.data().creatorName}<br>Phone Number: ${docs.data().creatorPhone}<br><img src="${docs.data().petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
+
+                    // If the marker is already in the array, don't add it to the array
+
+                    if (newMarker in markers) {
+                        console.info('Marker already in array');
+
+                    } else {
+                        markers.push(newMarker);
+                        markerClusters.addLayer(markers[markers.length - 1]);
+                    }
+
+                });
+
+                // coordsList.innerHTML = items2.join('');
+
+
+
+                console.info('Current markers array list: ' + markers)
+
+            });
+
+
 
     } else {
         // not signed in
         whenSignedIn.style.visibility = "hidden";
         whenSignedOut.style.visibility = "visible";
         userDetails.innerHTML = '';
-        signOutBtn.style.display = "none"
 
+        signOutBtn.style.display = "none"
+        whenSignedIn.style.display = "none";
+        whenSignedOut.style.display = "block";
         // Unsubscribe when the user signs out
-        unsubscribe && unsubscribe();
+        unsubscribe && unsubscribe2 && unsubscribe();
 
     }
 });
@@ -327,7 +351,7 @@ async function deleteDocbyID(button) {
     // Delete a coordinate using the id of the x icon
     id = button.getAttribute('data-docid');
 
-    var docu = await thingsRef.doc(id).get();
+    var docu = await petCoordsRef.doc(id).get();
 
     // Loop through the markers array and find the marker that matches the coords of the document
     for (let i = 0; i < markers.length; i++) {
@@ -345,8 +369,9 @@ async function deleteDocbyID(button) {
 
 
     // Finally, delete the document
-    await thingsRef.doc(id).delete();
+    await petCoordsRef.doc(id).delete();
 
     // location.reload();
 }
 
+mymap.addLayer(markerClusters)

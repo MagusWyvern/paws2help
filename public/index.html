@@ -21,13 +21,17 @@
 
   <link rel="stylesheet" href="./all.min.css" />
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Titan+One&display=swap" rel="stylesheet">
 
   <script src="./leaflet.js"></script>
 
-  <script defer src="https://unpkg.com/browse/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+  <script src="leaflet.markercluster.js"></script>
 
-  <link rel="stylesheet" href="https://unpkg.com/browse/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="./MarkerCluster.Default.css">
+
+  <link rel="stylesheet" href="hMarkerCluster.css">
 
   <link rel="stylesheet" href="./Control.Geocoder.css">
 
@@ -35,11 +39,15 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
   <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-firestore.js"></script>
+
+  <link rel="stylesheet" href="style.css">
 
   <script>
     var firebaseConfig = {
@@ -81,12 +89,13 @@
 
   <section class="hero is-info">
     <div class="hero-body">
-      <p class="title">
-        <img src="./icon.png" style="width: 60px; height: 40px;" alt="">
+      <p class="title" style="font-family: 'Titan One', serif; font-weight: 100;">
+        <img src="./icon.png" style="width: 5em; height: 5em; vertical-align: middle;" alt="">
         Paws2Help
       </p>
       <p class="subtitle">
-        Paws2Help is a simple web application that allows you to give and adopt cats. We hope to reduce the number of neglected stray cats living in the streets!
+        Paws2Help is a simple web application that allows you to give and adopt cats. We hope to reduce the number of
+        neglected stray cats living in the streets!
       </p>
     </div>
   </section>
@@ -97,7 +106,8 @@
 
     <section id="whenSignedOut">
 
-      <button id="signInBtn" class="button">Sign in with Google</button><br><br>
+      <button id="signInBtn" class="button"><i class="fa-brands fa-google" style="margin-right: 1em;"></i> Sign in with Google</button><br><br>
+      <button id="facebookSignInBtn" class="button"><i class="fa-brands fa-facebook" style="margin-right: 1em;"></i> Sign in with Facebook</button><br><br>
 
       <p>You are currently not logged in! Please log in to view your adoption or donation listings.</p><br>
       <a href="./privacy-policy.html">Privacy Policy</a>
@@ -113,48 +123,54 @@
       <ul id="coordsList"></ul><br>
 
 
-        <div class="column is-full">
-          <button id="location-button" class="button is-success">Set map view to my current location</button><br><br>
-          <p class="description">This requires your permission to use your location data</p><br>
-        </div>
-  
-        <!-- <div class="column">
+      <div class="column is-full">
+        <button id="location-button" class="button is-success">Set map view to my current location</button><br><br>
+        <p class="description">This requires your permission to use your location data</p><br>
+      </div>
+
+      <!-- <div class="column">
           <button id="update-center" class="button">Update location to center of map</button>
         </div> -->
 
 
-        <div class="column is-full">
+      <div class="column is-full">
 
-          <div class="box">
+        <div class="box">
 
-            <p>Full name</p>
-            <input class="input" type="text" placeholder="Your name" id="creatorName"><br><br>
-  
-            <p>Phone number</p>
-            <input id="creatorPhone" class="input" type="text" placeholder="Your number"><br><br>
-  
-            <p>I am donating pets 📤<input type="checkbox" id="donate" name="donate" value="true"></p><br>
-            <p class="description">I am adopting pets 📥<input type="checkbox" id="adopt" name="adopt" value="true"></p><br>
+          <p>Full name</p>
+          <input class="input" type="text" placeholder="Your name" id="creatorName"><br><br>
 
-          </div>
+          <p>Phone number</p>
+          <input id="creatorPhone" class="input" type="text" placeholder="Your number"><br><br>
 
+          <p>Pet Image</p>
+          <sub>You can upload the image to <a href="https://imgur.com/">imgur</a> or <a
+              href="https://imgbb.com/">imgBB</a> and share the link here!</sub>
+          <input id="petImage" class="input" type="text" placeholder="Your image url"><br><br>
 
-          <script defer>
-            donateStatus = ""
-            if(document.getElementById('donate').checked) {
-              donateStatus.innerHTML = `Mark me as donating on the map`
-              
-            } else if(document.getElementById('donate').checked && document.getElementById('adopt').checked) {
-              donateStatus.innerHTML = `Mark me as donating and receiving on the map`
-            } 
-            else {
-              donateStatus.innerHTML = `Mark me as receiving on the map`
-            }
-          </script>
+          <p>I am donating pets 📤<input type="checkbox" id="donate" name="donate" value="true"></p><br>
+          <p class="description">I am adopting pets 📥<input type="checkbox" id="adopt" name="adopt" value="true"></p>
+          <br>
 
-          <p class="description">When you're ready, tap the button to list your current location on the map!</p>
-          <button id="createThing" class="button is-primary">Mark my location on the map</button>
         </div>
+
+
+        <script defer>
+          donateStatus = ""
+          if (document.getElementById('donate').checked) {
+            donateStatus.innerHTML = `Mark me as donating on the map`
+
+          } else if (document.getElementById('donate').checked && document.getElementById('adopt').checked) {
+            donateStatus.innerHTML = `Mark me as donating and receiving on the map`
+          }
+          else {
+            donateStatus.innerHTML = `Mark me as receiving on the map`
+          }
+        </script>
+
+        <p class="description">When you're ready, tap the button to list your current location on the map!</p>
+        <button id="createThing" class="button is-primary">Mark my location on the map</button>
+      </div>
 
       <br> <br>
 
