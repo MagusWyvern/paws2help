@@ -21,18 +21,7 @@ var dogIcon = L.icon({
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
-    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
-    shadowAnchor: [4, 62],  // the same for the shadow
-    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
-});
-
-var catIcon = L.icon({
-    iconUrl: './map-icons/cat-solid.svg',
-    shadowUrl: 'shadow.svg',
-
-    iconSize: [45, 50], // size of the icon
-    shadowSize: [50, 64], // size of the shadow
-    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+    iconAnchor: [10, 45], // point of the icon which will correspond to marker's location
     shadowAnchor: [4, 62],  // the same for the shadow
     popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
@@ -43,7 +32,7 @@ var birdIcon = L.icon({
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
-    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+    iconAnchor: [10, 45], // point of the icon which will correspond to marker's location
     shadowAnchor: [4, 62],  // the same for the shadow
     popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
@@ -54,9 +43,9 @@ var helpIcon = L.icon({
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
-    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+    iconAnchor: [10, 45], // point of the icon which will correspond to marker's location
     shadowAnchor: [4, 62],  // the same for the shadow
-    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+    popupAnchor: [10, -30] // point from which the popup should open relative to the iconAnchor
 });
 
 var catIcon = L.icon({
@@ -65,12 +54,12 @@ var catIcon = L.icon({
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
-    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+    iconAnchor: [10, 45], // point of the icon which will correspond to marker's location
     shadowAnchor: [4, 62],  // the same for the shadow
-    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+    popupAnchor: [10, -30] // point from which the popup should open relative to the iconAnchor
 });
 
-mymap = L.map('mapid').setView([3.140853, 101.693207], 10);
+mymap = L.map('mapid').setView([4.225128, 102.249195], 8);
 
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -153,17 +142,6 @@ function eventFire(el, etype) {
     }
 }
 
-// if (position.coords.latitude && position.coords.longitude) {
-
-// } else {
-//     console.warn('Unable to get user location')
-// }
-
-
-// const updateCenter = document.getElementById('update-center');
-
-// updateCenter.onclick = function () { L.marker([mymap.getCenter().lat, mymap.getCenter().lng]).addTo(mymap) };
-
 // Firebase Implementation starts here
 
 const signInBtn = document.getElementById('signInBtn');
@@ -215,7 +193,7 @@ auth.onAuthStateChanged(user => {
         facebookSignInBtn.style.display = "none";
 
 
-        userDetails.innerHTML = `<img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br><h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br><p>${user.phoneNumber ? user.phoneNumber : ''}</p>`;
+        userDetails.innerHTML = `<img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br><h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br><p> ${user.phoneNumber ? user.phoneNumber : ''}</p>`;
 
         // Database Reference
         petCoordsRef = db.collection('pet-coords')
@@ -276,7 +254,7 @@ auth.onAuthStateChanged(user => {
                             <div class="column">
                                 <li id="${doc.id}">Latitude: ${doc.data().coords[0]}, Longitude: ${doc.data().coords[1]}</li>
                                 <strong>${doc.data().addressName.toLocaleString()}</strong> <br>
-                                <small>${doc.data().createdAt.toLocaleString()}</small>
+                                <small>${doc.data().createdAt.toDate().toDateString()}</small>
                             </div>
      
                             <div class="column">
@@ -294,10 +272,6 @@ auth.onAuthStateChanged(user => {
 
                 coordsList.innerHTML = items.join('');
 
-                console.info('Current markers array list: ' + markers)
-
-                mymap.addLayer(markerClusters)
-
             });
 
         // ------------
@@ -308,32 +282,55 @@ auth.onAuthStateChanged(user => {
 
                 querySnapshot.docs.map(docs => {
 
-                    var newMarker = new L.marker([docs.data().coords[0], docs.data().coords[1]], { icon: catIcon }).bindPopup(`${docs.data().donate ? 'I am donating' : 'I am looking for'} cats.<br>Adress: ${docs.data().addressName}<br>Name: ${docs.data().creatorName}<br>Phone Number: ${docs.data().creatorPhone}<br><img src="${docs.data().petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
-
-                    // If the marker is already in the array, don't add it to the array
-
-                    if (newMarker in markers) {
-                        console.info('Marker already in array');
-
+                    if (docs.data().petImage == undefined) {
+                        petImage = "./blank-cat.jpg"
                     } else {
+                        petImage = docs.data().petImage
+
+                    }
+
+
+                    if (docs.data().creatorName == undefined) {
+                        creatorName = "Anonymous"
+                    } else {
+                        creatorName = docs.data().creatorName
+                    }
+
+
+                    if (docs.data().creatorPhone == undefined) {
+                        creatorPhone = "No phone number provided"
+                    } else {
+                        creatorPhone = docs.data().creatorPhone
+                    }
+
+                    var newMarker = new L.marker([docs.data().coords[0], docs.data().coords[1]], { icon: catIcon }).bindPopup(`${docs.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${docs.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
+
+                    // Compare the new marker against every marker in the array
+
+                    if (markers.includes(newMarker) == false) {
                         markers.push(newMarker);
-                        markerClusters.addLayer(markers[markers.length - 1]);
+                        markerClusters.addLayer(newMarker);
+                    } else {
+                        console.info('Marker already exists');
                     }
 
                 });
 
-                // coordsList.innerHTML = items2.join('');
+                for (let i = 0; i < markers.length; i++) {
+                    if (markers[i] != markerClusters[i]) {
+                        markerClusters.addLayer(markers[i]);
+                    } else {
+                        console.info('Marker already in cluster')
+                    }
+                }
 
-
-
-                console.info('Current markers array list: ' + markers)
+                console.info('Current markers array length: ' + markers.length)
 
             });
 
-
-
     } else {
-        // not signed in
+
+        // This is what is shown to the user when it's not signed in
         whenSignedIn.style.visibility = "hidden";
         whenSignedOut.style.visibility = "visible";
         userDetails.innerHTML = '';
@@ -351,13 +348,13 @@ async function deleteDocbyID(button) {
     // Delete a coordinate using the id of the x icon
     id = button.getAttribute('data-docid');
 
-    var docu = await petCoordsRef.doc(id).get();
+    var docIDToDelete = await petCoordsRef.doc(id).get();
 
     // Loop through the markers array and find the marker that matches the coords of the document
     for (let i = 0; i < markers.length; i++) {
-        if (markers[i]._latlng.lat == docu.data().coords[0] && markers[i]._latlng.lng == docu.data().coords[1]) {
+        if (markers[i]._latlng.lat == docIDToDelete.data().coords[0] && markers[i]._latlng.lng == docIDToDelete.data().coords[1]) {
             // Remove the marker from the map
-            mymap.removeLayer(markers[i])
+            markerClusters.removeLayer(markers[i])
             // Remove the marker from the array
             markers.splice(i, 1);
             break;
@@ -371,7 +368,7 @@ async function deleteDocbyID(button) {
     // Finally, delete the document
     await petCoordsRef.doc(id).delete();
 
-    // location.reload();
+    location.reload();
 }
 
 mymap.addLayer(markerClusters)

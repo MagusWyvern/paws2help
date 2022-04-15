@@ -116,13 +116,18 @@
 
     <section id="whenSignedIn">
 
-      <div id="userDetails"></div>
+      <div class="box">
+        <div id="userDetails"></div>
+
+        <button id="signOutBtn" class="button is-danger">Sign Out</button><br><br>
+      </div>
+
 
       <h3>Currently your registered locations are:</h3><br>
 
       <ul id="coordsList"></ul><br>
 
-
+<hr>
       <div class="column is-full">
         <button id="location-button" class="button is-success">Set map view to my current location</button><br><br>
         <p class="description">This requires your permission to use your location data</p><br>
@@ -133,14 +138,25 @@
         </div> -->
 
 
+        
+        
+
+      
+      
+      <div id="mapid" style="height: 75vh; padding: 4rem; z-index: 0; margin: 5vh;"></div>
+      
+      
+      <hr>
       <div class="column is-full">
 
         <div class="box">
 
-          <p>Full name</p>
+          <h3 class="title">Donating or Looking for a Pet?</h3>
+
+          <p>Full Name</p>
           <input class="input" type="text" placeholder="Your name" id="creatorName"><br><br>
 
-          <p>Phone number</p>
+          <p>Phone Number</p>
           <input id="creatorPhone" class="input" type="text" placeholder="Your number"><br><br>
 
           <p>Pet Image</p>
@@ -169,24 +185,16 @@
         </script>
 
         <p class="description">When you're ready, tap the button to list your current location on the map!</p>
+        <sub>Make sure your address is at the center of the map view!</sub><br>
         <button id="createThing" class="button is-primary">Mark my location on the map</button>
       </div>
 
       <br> <br>
 
-      <button id="signOutBtn" class="button is-danger">Sign Out</button><br><br>
+  
 
     </section>
-
-
   </center>
-
-
-  <div id="mapid" style="height: 75vh; padding: 4rem; z-index: 0; margin: 5vh;"></div>
-
-
-  <hr>
-
   <article class="message is-warning">
     <div class="message-header">
       <p>Reminder</p>
