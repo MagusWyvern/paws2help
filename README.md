@@ -1,1 +1,2 @@
-## Bug counter = 3
+## Paws2Help: A Fundamental Endeavour to Support Stray Cats
+

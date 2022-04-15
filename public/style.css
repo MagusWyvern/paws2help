@@ -1,0 +1,30 @@
+body {
+    animation: fadeIn 2s ease-in;
+}
+
+.hero {
+    background-color: #06BA63;
+}
+
+.hero.is-info {
+    background-color: #06BA63;
+}
+
+
+#add-button {
+    background-color: #06BA63;
+}
+
+#signOutBtn {
+    /* background-color: rgb(145, 1, 1); */
+    color: whitesmoke;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
