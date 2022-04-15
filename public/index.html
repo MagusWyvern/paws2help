@@ -139,7 +139,7 @@
           <div class="navbar-item">
             <div class="buttons">
               <a id="add-button" class="button is-link">Download App</a>
-          </div>
+            </div>
           </div>
         </div>
       </div>
@@ -200,13 +200,13 @@
 
 
 
+    </section>
 
 
 
+    <div id="mapid" style="height: 75vh; padding: 4rem; z-index: 0; margin: 5vh;"></div>
 
-      <div id="mapid" style="height: 75vh; padding: 4rem; z-index: 0; margin: 5vh;"></div>
-
-
+    <section id="whenSignedOut">
       <hr>
       <div class="column is-full">
 
@@ -230,27 +230,27 @@
           <br>
 
         </div>
+    </section>
 
+    <script defer>
+      donateStatus = ""
+      if (document.getElementById('donate').checked) {
+        donateStatus.innerHTML = `Mark me as donating on the map`
 
-        <script defer>
-          donateStatus = ""
-          if (document.getElementById('donate').checked) {
-            donateStatus.innerHTML = `Mark me as donating on the map`
+      } else if (document.getElementById('donate').checked && document.getElementById('adopt').checked) {
+        donateStatus.innerHTML = `Mark me as donating and receiving on the map`
+      }
+      else {
+        donateStatus.innerHTML = `Mark me as receiving on the map`
+      }
+    </script>
 
-          } else if (document.getElementById('donate').checked && document.getElementById('adopt').checked) {
-            donateStatus.innerHTML = `Mark me as donating and receiving on the map`
-          }
-          else {
-            donateStatus.innerHTML = `Mark me as receiving on the map`
-          }
-        </script>
+    <p class="description">When you're ready, tap the button to list your current location on the map!</p>
+    <sub>Make sure your address is at the center of the map view!</sub><br>
+    <button id="createThing" class="button is-primary">Mark my location on the map</button>
+    </div>
 
-        <p class="description">When you're ready, tap the button to list your current location on the map!</p>
-        <sub>Make sure your address is at the center of the map view!</sub><br>
-        <button id="createThing" class="button is-primary">Mark my location on the map</button>
-      </div>
-
-      <br> <br>
+    <br> <br>
 
 
 
