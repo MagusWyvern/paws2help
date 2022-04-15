@@ -81,9 +81,9 @@ circle.bindPopup("Stray cats around this area.");
 
 // Veterinar clinics
 
-L.marker([2.734557, 101.951923], { icon: helpIcon, draggable: true, autoPan: true }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
+// L.marker([2.734557, 101.951923], { icon: helpIcon, draggable: true, autoPan: true }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
 
-L.marker([5.399737, 101.678467], { icon: helpIcon }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
+// L.marker([5.399737, 101.678467], { icon: helpIcon }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
 
 function getLocation() {
 
