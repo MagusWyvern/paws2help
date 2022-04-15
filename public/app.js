@@ -327,7 +327,7 @@ auth.onAuthStateChanged(user => {
                 console.info('Current markers array length: ' + markers.length)
 
             });
-
+        mymap.addLayer(markerClusters)
     } else {
 
         // This is what is shown to the user when it's not signed in
@@ -371,4 +371,3 @@ async function deleteDocbyID(button) {
     location.reload();
 }
 
-mymap.addLayer(markerClusters)
