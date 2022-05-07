@@ -176,7 +176,7 @@ var url = 1
 var count = 0
 var markerClusters = L.markerClusterGroup()
 
-mymap.addLayer(markerClusters)
+// mymap.addLayer(markerClusters)
 
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -347,7 +347,7 @@ auth.onAuthStateChanged(user => {
 
             });
 
-        mymap.addLayer(markerClusters)
+        
 
     } else {
 
@@ -366,6 +366,8 @@ auth.onAuthStateChanged(user => {
 
     }
 });
+
+mymap.addLayer(markerClusters)
 
 async function deleteDocbyID(button) {
     // Delete a coordinate using the id of the x icon
