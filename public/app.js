@@ -152,7 +152,7 @@ const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
 const facebookProvider = new firebase.auth.FacebookAuthProvider();
 
-/// Sign in event handlers
+/// Sign in and sign out button event handlers
 
 signInBtn.onclick = () => auth.signInWithPopup(provider);
 facebookSignInBtn.onclick = () => auth.signInWithPopup(facebookProvider);
@@ -171,7 +171,7 @@ const whenSignedOut = document.getElementById('whenSignedOut');
 const userDetails = document.getElementById('userDetails');
 
 var markers = new Array();
-var addressDisplayName = "Street adress not found, you may delete this address";
+var addressDisplayName = "";
 var url = 1
 var count = 0
 var markerClusters = L.markerClusterGroup()
@@ -180,7 +180,9 @@ mymap.addLayer(markerClusters)
 
 auth.onAuthStateChanged(user => {
     if (user) {
-        // signed in
+
+        // This is what is shown to the user when it's signed in
+
         whenSignedIn.style.visibility = "visible";
         whenSignedOut.style.visibility = "hidden";
         signInBtn.style.visibility = "hidden";
@@ -192,26 +194,30 @@ auth.onAuthStateChanged(user => {
         signInBtn.style.display = "none";
         facebookSignInBtn.style.display = "none";
 
+        // Personalize userDetails section for each user
 
         userDetails.innerHTML = `<img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br><h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br><p> ${user.phoneNumber ? user.phoneNumber : ''}</p>`;
 
         // Database Reference
+
         petCoordsRef = db.collection('pet-coords')
 
         async function addPetCoords() {
+
+            // Use the server timestamp instead of client so that the data stays consistent
+
             const { serverTimestamp } = firebase.firestore.FieldValue;
 
             url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${mymap.getCenter().lat}&lon=${mymap.getCenter().lng}&zoom=18&addressdetails=1`;
 
-            console.info('URL to fetch: ' + url);
-            console.info('Latitude to fetch:' + mymap.getCenter().lat);
-            console.info('Longitude to fetch:' + mymap.getCenter().lng);
+            // Debugging
+            // console.info('URL to fetch: ' + url);
+            // console.info('Latitude to fetch:' + mymap.getCenter().lat);
+            // console.info('Longitude to fetch:' + mymap.getCenter().lng);
 
             await fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
 
             console.info('Address: ' + addressDisplayName);
-
-            // Set donate to true if user checked the tickbox
 
             await petCoordsRef.add({
                 coords: [mymap.getCenter().lat, mymap.getCenter().lng],
@@ -233,6 +239,7 @@ auth.onAuthStateChanged(user => {
 
             // location.reload()
         }
+
         createThing.onclick = () => {
 
             addPetCoords();
@@ -274,8 +281,8 @@ auth.onAuthStateChanged(user => {
 
             });
 
+        // Debugging
         // console.log("Here!")
-
         // console.log(markers)
 
         // Read-only data displayed to all logged in users
@@ -284,7 +291,7 @@ auth.onAuthStateChanged(user => {
 
             // Queries the firestore API for a snapshot of the documents
             // Updates on any document change
-            
+
             .onSnapshot(querySnapshot => {
 
                 markers = new Array()
@@ -300,13 +307,11 @@ auth.onAuthStateChanged(user => {
 
                     }
 
-
                     if (docs.data().creatorName == undefined) {
                         creatorName = "Anonymous"
                     } else {
                         creatorName = docs.data().creatorName
                     }
-
 
                     if (docs.data().creatorPhone == undefined) {
                         creatorPhone = "No phone number provided"
@@ -316,11 +321,10 @@ auth.onAuthStateChanged(user => {
 
                     var newMarker = new L.marker([docs.data().coords[0], docs.data().coords[1]], { icon: catIcon }).bindPopup(`${docs.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${docs.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
 
-                    // Compare the new marker against every marker in the array
-
-                    console.log("New marker: " + newMarker)
-
+                    console.log(newMarker)
                     console.log(markers.includes(newMarker))
+
+                    // Compare the new marker against every marker in the array
 
                     if (markers.includes(newMarker) == false) {
                         markers.push(newMarker);
@@ -332,8 +336,8 @@ auth.onAuthStateChanged(user => {
                 });
 
                 for (let i = 0; i < markers.length; i++) {
-                    if (markers[i] != markerClusters[i]) {
-                        markerClusters.addLayer(markers[i]);
+                    if (markerClusters.includes(markers[i]) == false) {
+                        markerClusters.addLayer(markers[i])
                     } else {
                         console.info('Marker already in cluster')
                     }
@@ -348,6 +352,7 @@ auth.onAuthStateChanged(user => {
     } else {
 
         // This is what is shown to the user when it's not signed in
+
         whenSignedIn.style.visibility = "hidden";
         whenSignedOut.style.visibility = "visible";
         userDetails.innerHTML = '';
@@ -366,14 +371,16 @@ async function deleteDocbyID(button) {
     // Delete a coordinate using the id of the x icon
     id = button.getAttribute('data-docid');
 
+    // Get the coords from the doc id 
     var docIDToDelete = await petCoordsRef.doc(id).get();
 
     // Loop through the markers array and find the marker that matches the coords of the document
     for (let i = 0; i < markers.length; i++) {
         if (markers[i]._latlng.lat == docIDToDelete.data().coords[0] && markers[i]._latlng.lng == docIDToDelete.data().coords[1]) {
+
             // Remove the marker from the map
             markerClusters.removeLayer(markers[i])
-            
+
             // Remove the marker from the array
             markers.splice(i, 1);
             break;
