@@ -290,6 +290,7 @@ auth.onAuthStateChanged(user => {
             .onSnapshot(querySnapshot => {
 
                 markers = new Array()
+                markerClusters = L.markerClusterGroup()
 
                 querySnapshot.docs.map(docs => {
 
