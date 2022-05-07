@@ -278,7 +278,7 @@ auth.onAuthStateChanged(user => {
 
         console.log("Here!")
         console.log(markers)
-        
+
         unsubscribe2 = petCoordsRef
             .onSnapshot(querySnapshot => {
 
@@ -310,8 +310,10 @@ auth.onAuthStateChanged(user => {
                     // Compare the new marker against every marker in the array
 
                     console.log(newMarker)
+                    markers.includes(newMarker)
 
                     if (markers.includes(newMarker) == false) {
+
                         markers.push(newMarker);
                         markerClusters.addLayer(newMarker);
                     } else {
