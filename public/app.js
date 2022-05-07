@@ -310,7 +310,7 @@ auth.onAuthStateChanged(user => {
                     // Compare the new marker against every marker in the array
 
                     console.log(newMarker)
-                    markers.includes(newMarker)
+                    console.log(markers.includes(newMarker))
 
                     if (markers.includes(newMarker) == false) {
 
