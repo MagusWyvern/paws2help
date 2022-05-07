@@ -340,6 +340,8 @@ auth.onAuthStateChanged(user => {
                     }
                 }
 
+                mymap.addLayer(markerClusters)
+
                 console.info('Current markers array length: ' + markers.length)
 
             });
@@ -364,7 +366,7 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-mymap.addLayer(markerClusters)
+
 
 async function deleteDocbyID(button) {
     // Delete a coordinate using the id of the x icon
