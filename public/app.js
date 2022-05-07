@@ -85,11 +85,6 @@ circle.bindPopup("Stray cats around this area.");
 
 // L.marker([5.399737, 101.678467], { icon: helpIcon }).addTo(mymap).bindPopup("Klinik Veterinar XYZ Seremban is offering help.");
 
-function getLocation() {
-
-
-}
-
 function success(position) {
 
     userlatitude = position.coords.latitude;
@@ -320,15 +315,16 @@ auth.onAuthStateChanged(user => {
                     }
 
                     var newMarker = new L.marker([docs.data().coords[0], docs.data().coords[1]], { icon: catIcon }).bindPopup(`${docs.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${docs.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
-
-                    console.log(newMarker)
-                    console.log(markers.includes(newMarker))
+                    
+                    // Debugging
+                    // console.log(newMarker)
+                    // console.log(markers.includes(newMarker))
 
                     // Compare the new marker against every marker in the array
 
                     if (markers.includes(newMarker) == false) {
                         markers.push(newMarker);
-                        markerClusters.addLayer(newMarker);
+                        // markerClusters.addLayer(newMarker);
                     } else {
                         console.info('Marker already exists');
                     }
