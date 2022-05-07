@@ -225,6 +225,7 @@ auth.onAuthStateChanged(user => {
             });
 
             // Clear the form
+
             document.getElementById('creatorName').value = '';
             document.getElementById('creatorPhone').value = '';
             document.getElementById('petImage').value = '';
@@ -238,13 +239,12 @@ auth.onAuthStateChanged(user => {
 
         }
 
-        // Query
+        // Read and write data displayed to the owner of the marker only
+
         unsubscribe = petCoordsRef.where('uid', '==', user.uid)
             .onSnapshot(querySnapshot => {
 
                 const items = querySnapshot.docs.map(doc => {
-
-                    // Use the reverse geocoding API to display it in the list
 
                     if (doc.data().uid == user.uid) {
                         return `
@@ -274,15 +274,24 @@ auth.onAuthStateChanged(user => {
 
             });
 
-        // ------------
+        // console.log("Here!")
 
-        console.log("Here!")
-        console.log(markers)
+        // console.log(markers)
+
+        // Read-only data displayed to all logged in users
 
         unsubscribe2 = petCoordsRef
+
+            // Queries the firestore API for a snapshot of the documents
+            // Updates on any document change
+            
             .onSnapshot(querySnapshot => {
 
+                markers = new Array()
+
                 querySnapshot.docs.map(docs => {
+
+                    // If the user didn't specify any values, give a fallback value 
 
                     if (docs.data().petImage == undefined) {
                         petImage = "./blank-cat.jpg"
@@ -309,11 +318,11 @@ auth.onAuthStateChanged(user => {
 
                     // Compare the new marker against every marker in the array
 
-                    console.log(newMarker)
+                    console.log("New marker: " + newMarker)
+
                     console.log(markers.includes(newMarker))
 
                     if (markers.includes(newMarker) == false) {
-
                         markers.push(newMarker);
                         markerClusters.addLayer(newMarker);
                     } else {
@@ -346,6 +355,7 @@ auth.onAuthStateChanged(user => {
         signOutBtn.style.display = "none"
         whenSignedIn.style.display = "none";
         whenSignedOut.style.display = "block";
+
         // Unsubscribe when the user signs out
         unsubscribe && unsubscribe2 && unsubscribe();
 
@@ -363,15 +373,12 @@ async function deleteDocbyID(button) {
         if (markers[i]._latlng.lat == docIDToDelete.data().coords[0] && markers[i]._latlng.lng == docIDToDelete.data().coords[1]) {
             // Remove the marker from the map
             markerClusters.removeLayer(markers[i])
+            
             // Remove the marker from the array
             markers.splice(i, 1);
             break;
         }
     }
-
-    // Make sure the map only shows the markers that are left in the firestore collection
-
-
 
     // Finally, delete the document
     await petCoordsRef.doc(id).delete();
