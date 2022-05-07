@@ -230,7 +230,7 @@ auth.onAuthStateChanged(user => {
             document.getElementById('petImage').value = '';
             document.getElementById('donate').checked = false;
 
-            location.reload()
+            // location.reload()
         }
         createThing.onclick = () => {
 
@@ -307,6 +307,8 @@ auth.onAuthStateChanged(user => {
 
                     // Compare the new marker against every marker in the array
 
+                    console.log(newMarker)
+
                     if (markers.includes(newMarker) == false) {
                         markers.push(newMarker);
                         markerClusters.addLayer(newMarker);
@@ -368,6 +370,6 @@ async function deleteDocbyID(button) {
     // Finally, delete the document
     await petCoordsRef.doc(id).delete();
 
-    location.reload();
+
 }
 
