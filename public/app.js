@@ -276,7 +276,7 @@ auth.onAuthStateChanged(user => {
 
         // ------------
 
-
+            console.log("Here!")
         unsubscribe2 = petCoordsRef
             .onSnapshot(querySnapshot => {
 
@@ -329,7 +329,9 @@ auth.onAuthStateChanged(user => {
                 console.info('Current markers array length: ' + markers.length)
 
             });
+
         mymap.addLayer(markerClusters)
+
     } else {
 
         // This is what is shown to the user when it's not signed in
