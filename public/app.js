@@ -276,7 +276,9 @@ auth.onAuthStateChanged(user => {
 
         // ------------
 
-            console.log("Here!")
+        console.log("Here!")
+        console.log(markers)
+        
         unsubscribe2 = petCoordsRef
             .onSnapshot(querySnapshot => {
 
