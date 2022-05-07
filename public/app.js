@@ -336,7 +336,7 @@ auth.onAuthStateChanged(user => {
                 });
 
                 for (let i = 0; i < markers.length; i++) {
-                    if (markerClusters.includes(markers[i]) == false) {
+                    if (markerClusters.hasLayer(markers[i]) == false) {
                         markerClusters.addLayer(markers[i])
                     } else {
                         console.info('Marker already in cluster')
