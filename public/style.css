@@ -2,6 +2,11 @@ body {
     animation: fadeIn 2s ease-in;
 }
 
+.main {
+    width: 50%;
+    margin: 0 auto;
+}
+
 .hero {
     background-color: #06BA63;
 }
