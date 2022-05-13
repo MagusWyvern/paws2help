@@ -74,17 +74,17 @@
 
   <link rel="stylesheet" href="./leaflet.css" />
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Faker/3.1.0/faker.min.js" referrerpolicy="no-referrer"></script>
-
   <link rel="stylesheet" href="./all.min.css" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Titan+One&display=swap" rel="stylesheet">
 
   <script src="./leaflet.js"></script>
 
-  <script src="leaflet.markercluster.js"></script>
+  <script src="./leaflet.markercluster.js"></script>
 
   <link rel="stylesheet" href="./MarkerCluster.Default.css">
 
@@ -94,17 +94,25 @@
 
   <script src="./Control.Geocoder.js"></script>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"
+    integrity="sha512-HqxHUkJM0SYcbvxUw5P60SzdOTy/QVwA1JJrvaXJv4q7lmbDZCmZaqz01UPOaQveoxfYRv1tHozWGPMcuTBuvQ=="
+    crossorigin="anonymous">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
     integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-  <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"
+    integrity="sha512-5Xmrk9k1Xv/iFylGzXwhDkKyO55G3Rrt0kGJUqhGnrepJpkT16fDtuKpRyF1orUIYINEnE9UGU5BGslnkrUDaA=="
+    crossorigin="anonymous"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"
+    integrity="sha512-sdGbjNkPw01B6XiEjVTD4QKW32lt07tbXaQ5SR0gW7yv3CG0Vha6IO7kA5hSlPZoMGMjAcwgpCFZopXZTcUd6Q=="
+    crossorigin="anonymous"></script>></script>
 
-  <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-firestore.js"
+    integrity="sha512-UVnN2RB9wp0tJ0Cc3Z0Vi9byWNUzQmZQMIDaLMvjNJVvY1xx18wUVZ5vTQLQ2p3LqeutnajHQRU33OenWRvKOQ=="
+    crossorigin="anonymous"></script>
 
   <link rel="stylesheet" href="style.css">
 
@@ -161,94 +169,94 @@
 
   <hr>
 
-    <section class="main">
+  <section class="main">
 
-      <section id="whenSignedOut">
+    <section id="whenSignedOut">
 
-        <button id="signInBtn" class="button"><i class="fa-brands fa-google" style="margin-right: 1em;"></i> Sign in
-          with
-          Google</button><br><br>
-        <button id="facebookSignInBtn" class="button"><i class="fa-brands fa-facebook" style="margin-right: 1em;"></i>
-          Sign in with Facebook</button><br><br>
+      <button id="signInBtn" class="button"><i class="fa-brands fa-google" style="margin-right: 1em;"></i> Sign in
+        with
+        Google</button><br><br>
+      <button id="facebookSignInBtn" class="button"><i class="fa-brands fa-facebook" style="margin-right: 1em;"></i>
+        Sign in with Facebook</button><br><br>
 
-        <p>You are currently not logged in! Please log in to view adoption or donation listings</p><br>
-        <a href="./privacy-policy.html">Privacy Policy</a>
+      <p>You are currently not logged in! Please log in to view adoption or donation listings</p><br>
+      <a href="./privacy-policy.html">Privacy Policy</a>
 
-      </section>
+    </section>
 
-      <section id="whenSignedIn">
+    <section id="whenSignedIn">
 
-        <div class="box">
-          <div id="userDetails"></div>
+      <div class="box">
+        <div id="userDetails"></div>
 
-          <button id="signOutBtn" class="button is-danger">Sign Out</button><br><br>
-        </div>
-
-
-        <h3>Currently your registered locations are:</h3><br>
-
-        <ul id="coordsList"></ul><br>
-
-        <hr>
-        <div class="column is-full">
-          <button id="location-button" class="button is-success">Set map view to my current location</button><br><br>
-          <p class="description">This requires your permission to use your location data</p><br>
-        </div>
-
-      </section>
-
-      <div id="mapid" style="height: 75vh; padding: 4rem; z-index: 0; margin: 5vh;"></div>
-
-      <section id="whenSignedOut">
-        <hr>
-        <div class="column is-full">
-
-          <div class="box">
-
-            <h3 class="title">Donating or Looking for a Pet?</h3>
-
-            <p>Full Name</p>
-            <input class="input" type="text" placeholder="Your name" id="creatorName"><br><br>
-
-            <p>Phone Number</p>
-            <input id="creatorPhone" class="input" type="text" placeholder="Your number"><br><br>
-
-            <p>Pet Image</p>
-            <sub>You can upload the image to <a href="https://imgur.com/">imgur</a> or <a
-                href="https://imgbb.com/">imgBB</a> and share the link here!</sub>
-            <input id="petImage" class="input" type="text" placeholder="Your image url"><br><br>
-
-            <p>I am donating pets 📤<input type="checkbox" id="donate" name="donate" value="true"></p><br>
-            <p class="description">I am adopting pets 📥<input type="checkbox" id="adopt" name="adopt" value="true"></p>
-            <br>
-
-          </div>
-      </section>
-
-      <script defer>
-        donateStatus = ""
-        if (document.getElementById('donate').checked) {
-          donateStatus.innerHTML = `Mark me as donating on the map`
-
-        } else if (document.getElementById('donate').checked && document.getElementById('adopt').checked) {
-          donateStatus.innerHTML = `Mark me as donating and receiving on the map`
-        }
-        else {
-          donateStatus.innerHTML = `Mark me as receiving on the map`
-        }
-      </script>
-
-      <p class="description">When you're ready, tap the button to list your current location on the map!</p>
-      <sub>Make sure your address is at the center of the map view!</sub><br>
-      <button id="createThing" class="button is-primary">Mark my location on the map</button>
-
+        <button id="signOutBtn" class="button is-danger">Sign Out</button><br><br>
       </div>
 
-      <br> <br>
+
+      <h3>Currently your registered locations are:</h3><br>
+
+      <ul id="coordsList"></ul><br>
+
+      <hr>
+      <div class="column is-full">
+        <button id="location-button" class="button is-success">Set map view to my current location</button><br><br>
+        <p class="description">This requires your permission to use your location data</p><br>
+      </div>
 
     </section>
 
+    <div id="mapid" style="height: 75vh; padding: 4rem; z-index: 0; margin: 5vh;"></div>
+
+    <section id="whenSignedOut">
+      <hr>
+      <div class="column is-full">
+
+        <div class="box">
+
+          <h3 class="title">Donating or Looking for a Pet?</h3>
+
+          <p>Full Name</p>
+          <input class="input" type="text" placeholder="Your name" id="creatorName"><br><br>
+
+          <p>Phone Number</p>
+          <input id="creatorPhone" class="input" type="text" placeholder="Your number"><br><br>
+
+          <p>Pet Image</p>
+          <sub>You can upload the image to <a href="https://imgur.com/">imgur</a> or <a
+              href="https://imgbb.com/">imgBB</a> and share the link here!</sub>
+          <input id="petImage" class="input" type="text" placeholder="Your image url"><br><br>
+
+          <p>I am donating pets 📤<input type="checkbox" id="donate" name="donate" value="true"></p><br>
+          <p class="description">I am adopting pets 📥<input type="checkbox" id="adopt" name="adopt" value="true"></p>
+          <br>
+
+        </div>
     </section>
+
+    <script defer>
+      donateStatus = ""
+      if (document.getElementById('donate').checked) {
+        donateStatus.innerHTML = `Mark me as donating on the map`
+
+      } else if (document.getElementById('donate').checked && document.getElementById('adopt').checked) {
+        donateStatus.innerHTML = `Mark me as donating and receiving on the map`
+      }
+      else {
+        donateStatus.innerHTML = `Mark me as receiving on the map`
+      }
+    </script>
+
+    <p class="description">When you're ready, tap the button to list your current location on the map!</p>
+    <sub>Make sure your address is at the center of the map view!</sub><br>
+    <button id="createThing" class="button is-primary">Mark my location on the map</button>
+
+    </div>
+
+    <br> <br>
+
+  </section>
+
+  </section>
 
   <article class="message is-warning">
     <div class="message-header">
@@ -261,13 +269,13 @@
     </div>
   </article>
 
-    <section class="main">
+  <section class="main">
 
-      <h1 class="title">Install our app!</h1>
-      <p class="subtitle">As development progresses, more features will be available in the mobile version!</p>
-      <a id="add-button" class="button is-link">Download App</a>
+    <h1 class="title">Install our app!</h1>
+    <p class="subtitle">As development progresses, more features will be available in the mobile version!</p>
+    <a id="add-button" class="button is-link">Download App</a>
 
-    </section>
+  </section>
 
   <footer class="footer">
     <div class="content has-text-centered">
