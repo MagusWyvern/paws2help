@@ -268,8 +268,6 @@ auth.onAuthStateChanged(user => {
                     `} else {
                     }
 
-                    ;
-
                 });
 
                 coordsList.innerHTML = items.join('');
