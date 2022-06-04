@@ -1,3 +1,5 @@
+// This file contains the code for the entire application
+
 var userlatitude = 0;
 var userlongitude = 0;
 var mymap = 0;
@@ -109,8 +111,8 @@ function onMapClick(e) {
         .openOn(mymap);
 }
 
+// Register the function so that it activates when the user clicks on the map
 mymap.on('click', onMapClick);
-
 
 function updateMap() {
     mymap.setView([userlatitude, userlongitude], 15);
@@ -173,6 +175,70 @@ var markerClusters = L.markerClusterGroup()
 
 // mymap.addLayer(markerClusters)
 
+async function addPetCoords() {
+
+    // Use the server timestamp instead of client so that the data stays consistent
+
+    const { serverTimestamp } = firebase.firestore.FieldValue;
+
+    url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${mymap.getCenter().lat}&lon=${mymap.getCenter().lng}&zoom=18&addressdetails=1`;
+
+    // Debugging
+    // console.info('URL to fetch: ' + url);
+    // console.info('Latitude to fetch:' + mymap.getCenter().lat);
+    // console.info('Longitude to fetch:' + mymap.getCenter().lng);
+
+    await fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
+
+    console.info('Address: ' + addressDisplayName);
+
+    await petCoordsRef.add({
+        coords: [mymap.getCenter().lat, mymap.getCenter().lng],
+        uid: user.uid,
+        donate: document.getElementById('donate').checked,
+        createdAt: serverTimestamp(),
+        addressName: addressDisplayName,
+        creatorName: document.getElementById('creatorName').value,
+        creatorPhone: document.getElementById('creatorPhone').value,
+        petImage: document.getElementById('petImage').value,
+    });
+
+    // Clear the form
+
+    document.getElementById('creatorName').value = '';
+    document.getElementById('creatorPhone').value = '';
+    document.getElementById('petImage').value = '';
+    document.getElementById('donate').checked = false;
+
+    // location.reload()
+}
+
+async function deleteDocbyID(button) {
+    // Delete a coordinate using the id of the x icon
+    id = button.getAttribute('data-docid');
+
+    // Get the coords from the doc id 
+    var docIDToDelete = await petCoordsRef.doc(id).get();
+
+    // Loop through the markers array and find the marker that matches the coords of the document
+    for (let i = 0; i < markers.length; i++) {
+        if (markers[i]._latlng.lat == docIDToDelete.data().coords[0] && markers[i]._latlng.lng == docIDToDelete.data().coords[1]) {
+
+            // Remove the marker from the map
+            markerClusters.removeLayer(markers[i])
+
+            // Remove the marker from the array
+            markers.splice(i, 1);
+            break;
+        }
+    }
+
+    // Finally, delete the document
+    await petCoordsRef.doc(id).delete();
+
+
+}
+
 auth.onAuthStateChanged(user => {
     if (user) {
 
@@ -195,45 +261,7 @@ auth.onAuthStateChanged(user => {
 
         // Database Reference
 
-        petCoordsRef = db.collection('pet-coords')
-
-        async function addPetCoords() {
-
-            // Use the server timestamp instead of client so that the data stays consistent
-
-            const { serverTimestamp } = firebase.firestore.FieldValue;
-
-            url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${mymap.getCenter().lat}&lon=${mymap.getCenter().lng}&zoom=18&addressdetails=1`;
-
-            // Debugging
-            // console.info('URL to fetch: ' + url);
-            // console.info('Latitude to fetch:' + mymap.getCenter().lat);
-            // console.info('Longitude to fetch:' + mymap.getCenter().lng);
-
-            await fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
-
-            console.info('Address: ' + addressDisplayName);
-
-            await petCoordsRef.add({
-                coords: [mymap.getCenter().lat, mymap.getCenter().lng],
-                uid: user.uid,
-                donate: document.getElementById('donate').checked,
-                createdAt: serverTimestamp(),
-                addressName: addressDisplayName,
-                creatorName: document.getElementById('creatorName').value,
-                creatorPhone: document.getElementById('creatorPhone').value,
-                petImage: document.getElementById('petImage').value,
-            });
-
-            // Clear the form
-
-            document.getElementById('creatorName').value = '';
-            document.getElementById('creatorPhone').value = '';
-            document.getElementById('petImage').value = '';
-            document.getElementById('donate').checked = false;
-
-            // location.reload()
-        }
+        let petCoordsRef = db.collection('pet-coords')
 
         createThing.onclick = () => {
 
@@ -275,8 +303,7 @@ auth.onAuthStateChanged(user => {
             });
 
         // Debugging
-        // console.log("Here!")
-        // console.log(markers)
+        // console.log("Marker array: " str(markers))
 
         // Read-only data displayed to all logged in users
 
@@ -366,29 +393,5 @@ auth.onAuthStateChanged(user => {
 
 
 
-async function deleteDocbyID(button) {
-    // Delete a coordinate using the id of the x icon
-    id = button.getAttribute('data-docid');
 
-    // Get the coords from the doc id 
-    var docIDToDelete = await petCoordsRef.doc(id).get();
-
-    // Loop through the markers array and find the marker that matches the coords of the document
-    for (let i = 0; i < markers.length; i++) {
-        if (markers[i]._latlng.lat == docIDToDelete.data().coords[0] && markers[i]._latlng.lng == docIDToDelete.data().coords[1]) {
-
-            // Remove the marker from the map
-            markerClusters.removeLayer(markers[i])
-
-            // Remove the marker from the array
-            markers.splice(i, 1);
-            break;
-        }
-    }
-
-    // Finally, delete the document
-    await petCoordsRef.doc(id).delete();
-
-
-}
 
