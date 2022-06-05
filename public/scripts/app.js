@@ -1,4 +1,4 @@
-// This file contains the code for the entire application
+// This file contains the code for the entire application, including the firebase and leaflet implementation
 
 var userlatitude = 0;
 var userlongitude = 0;
@@ -271,7 +271,7 @@ auth.onAuthStateChanged(user => {
 
         // Read and write data displayed to the owner of the marker only
 
-        unsubscribe = petCoordsRef.where('uid', '==', user.uid)
+        personalMarkerSubscribe = petCoordsRef.where('uid', '==', user.uid)
             .onSnapshot(querySnapshot => {
 
                 const items = querySnapshot.docs.map(doc => {
@@ -307,7 +307,7 @@ auth.onAuthStateChanged(user => {
 
         // Read-only data displayed to all logged in users
 
-        unsubscribe2 = petCoordsRef
+        publicMarkerSubscribe = petCoordsRef
 
             // Queries the firestore API for a snapshot of the documents
             // Updates on any document change
@@ -340,8 +340,9 @@ auth.onAuthStateChanged(user => {
                         creatorPhone = docs.data().creatorPhone
                     }
 
-                    var newMarker = new L.marker([docs.data().coords[0], docs.data().coords[1]], { icon: catIcon }).bindPopup(`${docs.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${docs.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
+                    let newMarker = new L.marker([docs.data().coords[0], docs.data().coords[1]], { icon: catIcon }).bindPopup(`${docs.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${docs.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
                     
+
                     // Debugging
                     // console.log(newMarker)
                     // console.log(markers.includes(newMarker))
@@ -386,7 +387,7 @@ auth.onAuthStateChanged(user => {
         whenSignedOut.style.display = "block";
 
         // Unsubscribe when the user signs out
-        unsubscribe && unsubscribe2 && unsubscribe();
+        personalMarkerSubscribe && publicMarkerSubscribe && unsubscribe();
 
     }
 });
