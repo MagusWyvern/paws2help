@@ -2,17 +2,17 @@
 
 It is a common sight to see many stray animals roaming around the city, looking for food, water, or even shelter. Most of them have often been overlooked, given only at most a simple pat from strangers. Since they may be infected with dangerous diseases and a wide range of the animals do not have a pleasant appearance, society chose to move further away from them causing them to continue to be neglected. 
 
-This web app aims to help the community aware of how many stray animals are in their vicinity. Along with features to list unwanted animals / pets for people that are looking to be pet owners.
+This web app aims to help the community aware of how many stray animals are in their vicinity. Along with features to list unwanted animals or pets for people that are looking to be pet owners.
 
 ## To-do
 
-[ ]: File Structure<br>
+- [ ] File Structure
 The file structure is currently being reorganized, but it'll follow your standard `/scripts/`, `/styles/` and so on.
 
-[ ]: Javascript Framework Integration<br>
+- [ ] Javascript Framework Integration
 While it is possible to not use any framework, I plan to integrate a bit of Vue to help me manage components of the web app and so on
 
-[ ]: Firebase Automatic Build Pipeline<br>
+- [ ] Firebase Automatic Build Pipeline
 Currently I'll need to manually deploy a build folder to firebase, unlike Netlify. 
 
 ## Builds

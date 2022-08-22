@@ -9,16 +9,20 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A web app for pet owners, by pet owners">
+  <meta name="keywords" content="Pet Donations, Stray Animals, Pet Adoptions">
+  <meta name="author" content="MagusWyvern">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="googlebot" content="notranslate" />
+  <meta name="google" content="nositelinkssearchbox" />
+
+  <!-- Only remove this once the page is properly organized -->
+  <meta name="google" content="nopagereadaloud" />
 
   <link rel="shortcut icon" type="image/x-icon" href="./icon.png" />
-
   <link rel="icon" href="./icon.png">
-
   <link rel="apple-touch-icon" href="icons/apple-icon-180.png">
 
-  <meta name="apple-mobile-web-app-capable" content="yes">
-
-  <!-- Apple startup images // TODO: Explain why are there so many -->
+  <!-- Apple startup images -->
   <link rel="apple-touch-startup-image" href="icons/apple-splash-2048-2732.jpg"
     media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
   <link rel="apple-touch-startup-image" href="icons/apple-splash-2732-2048.jpg"
@@ -92,7 +96,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <!-- Script imports, need to be imported before the styles  -->
+  <!-- Script imports, need to be imported after the styles  -->
   <script src="./scripts/leaflet.js"></script>
   <script src="./scripts/leaflet.markercluster.js"></script>
   <script src="./scripts/Control.Geocoder.js"></script>
@@ -106,7 +110,7 @@
     integrity="sha512-UVnN2RB9wp0tJ0Cc3Z0Vi9byWNUzQmZQMIDaLMvjNJVvY1xx18wUVZ5vTQLQ2p3LqeutnajHQRU33OenWRvKOQ=="
     crossorigin="anonymous"></script>
 
-  <!-- Firebase config data, these are not incredibly dangerous if left here (I think) -->
+  <!-- Firebase config data -->
   <script>
     var firebaseConfig = {
       apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
@@ -120,7 +124,7 @@
     firebase.initializeApp(firebaseConfig);
   </script>
 
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="./manifest.json">
 
 </head>
 

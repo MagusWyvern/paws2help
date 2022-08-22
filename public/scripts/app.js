@@ -1,5 +1,3 @@
-// This file contains the code for the entire application, including the firebase and leaflet implementation
-
 var userlatitude = 0;
 var userlongitude = 0;
 var mymap = 0;
@@ -10,7 +8,13 @@ var position = {
         lng: 0
     }
 }
+
+// This file contains the code for the entire application, including the firebase and leaflet implementation
+
+// Leaflet.js popup
 var popup = L.popup();
+
+// Options parameter for user geolocation
 var options = {
     enableHighAccuracy: true,
     timeout: 5000,
@@ -19,7 +23,7 @@ var options = {
 
 var dogIcon = L.icon({
     iconUrl: './map-icons/dog-solid.svg',
-    shadowUrl: 'shadow.svg',
+    shadowUrl: './map-icons/shadow.svg',
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
@@ -30,7 +34,7 @@ var dogIcon = L.icon({
 
 var birdIcon = L.icon({
     iconUrl: './map-icons/dove-solid.svg',
-    shadowUrl: 'shadow.svg',
+    shadowUrl: './map-icons/shadow.svg',
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
@@ -41,7 +45,7 @@ var birdIcon = L.icon({
 
 var helpIcon = L.icon({
     iconUrl: './map-icons/paw-solid.svg',
-    shadowUrl: 'shadow.svg',
+    shadowUrl: './map-icons/shadow.svg',
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
@@ -52,7 +56,7 @@ var helpIcon = L.icon({
 
 var catIcon = L.icon({
     iconUrl: './map-icons/cat-solid.svg',
-    shadowUrl: 'shadow.svg',
+    shadowUrl: './map-icons/shadow.svg',
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
@@ -61,6 +65,7 @@ var catIcon = L.icon({
     popupAnchor: [10, -30] // point from which the popup should open relative to the iconAnchor
 });
 
+// Setting the default map view (Malaysia)
 mymap = L.map('mapid').setView([4.225128, 102.249195], 8);
 
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
@@ -93,8 +98,8 @@ function success(position) {
     userlongitude = position.coords.longitude;
 
     // Debugging
-    console.log(position.coords.latitude);
-    console.log(position.coords.longitude);
+    // console.log(position.coords.latitude);
+    // console.log(position.coords.longitude);
 
     updateMap();
 
@@ -209,8 +214,6 @@ async function addPetCoords() {
     document.getElementById('creatorPhone').value = '';
     document.getElementById('petImage').value = '';
     document.getElementById('donate').checked = false;
-
-    // location.reload()
 }
 
 async function deleteDocbyID(button) {
@@ -322,7 +325,7 @@ auth.onAuthStateChanged(user => {
                     // If the user didn't specify any values, give a fallback value 
 
                     if (docs.data().petImage == undefined) {
-                        petImage = "./blank-cat.jpg"
+                        petImage = "./map-icons/blank-cat.jpg"
                     } else {
                         petImage = docs.data().petImage
 
