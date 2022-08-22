@@ -6,13 +6,13 @@ This web app aims to help the community aware of how many stray animals are in t
 
 ## To-do
 
-- [ ] File Structure
+- [ ] File Structure<br>
 The file structure is currently being reorganized, but it'll follow your standard `/scripts/`, `/styles/` and so on.
 
-- [ ] Javascript Framework Integration
+- [ ] Javascript Framework Integration<br>
 While it is possible to not use any framework, I plan to integrate a bit of Vue to help me manage components of the web app and so on
 
-- [ ] Firebase Automatic Build Pipeline
+- [ ] Firebase Automatic Build Pipeline<br>
 Currently I'll need to manually deploy a build folder to firebase, unlike Netlify. 
 
 ## Builds
