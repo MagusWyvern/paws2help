@@ -5,20 +5,24 @@
 
   <title>Paws2Help - List Adoptions or Donations for Cats</title>
 
+  <!-- Meta tags for search engines -->
   <meta charset="utf-8" />
-
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <meta name="description" content="A web app for pet owners, by pet owners">
+  <meta name="keywords" content="Pet Donations, Stray Animals, Pet Adoptions">
+  <meta name="author" content="MagusWyvern">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="googlebot" content="notranslate" />
+  <meta name="google" content="nositelinkssearchbox" />
+
+  <!-- Only remove this once the page is properly organized -->
+  <meta name="google" content="nopagereadaloud" />
 
   <link rel="shortcut icon" type="image/x-icon" href="./icon.png" />
-
   <link rel="icon" href="./icon.png">
-
   <link rel="apple-touch-icon" href="icons/apple-icon-180.png">
 
-  <meta name="apple-mobile-web-app-capable" content="yes">
-
+  <!-- Apple startup images -->
   <link rel="apple-touch-startup-image" href="icons/apple-splash-2048-2732.jpg"
     media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
   <link rel="apple-touch-startup-image" href="icons/apple-splash-2732-2048.jpg"
@@ -72,50 +76,41 @@
   <link rel="apple-touch-startup-image" href="icons/apple-splash-1136-640.jpg"
     media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 
-  <link rel="stylesheet" href="./leaflet.css" />
 
-  <link rel="stylesheet" href="./all.min.css" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Titan+One&display=swap" rel="stylesheet">
-
-  <script src="./leaflet.js"></script>
-
-  <script src="./leaflet.markercluster.js"></script>
-
-  <link rel="stylesheet" href="./MarkerCluster.Default.css">
-
-  <link rel="stylesheet" href="./MarkerCluster.css">
-
-  <link rel="stylesheet" href="./Control.Geocoder.css">
-
-  <script src="./Control.Geocoder.js"></script>
-
+  <!-- Stylesheet imports, both from CDNs and self-hosted -->
+  <link rel="stylesheet" href="./styles/leaflet.css" />
+  <link rel="stylesheet" href="./styles/all.min.css" />
+  <link rel="stylesheet" href="./styles/MarkerCluster.Default.css">
+  <link rel="stylesheet" href="./styles/MarkerCluster.css">
+  <link rel="stylesheet" href="./styles/Control.Geocoder.css">
+  <link rel="stylesheet" href="./styles/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"
     integrity="sha512-HqxHUkJM0SYcbvxUw5P60SzdOTy/QVwA1JJrvaXJv4q7lmbDZCmZaqz01UPOaQveoxfYRv1tHozWGPMcuTBuvQ=="
     crossorigin="anonymous">
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
     integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat&family=Titan+One&display=swap">
 
+  <!-- Preconnect to google fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Script imports, need to be imported after the styles  -->
+  <script src="./scripts/leaflet.js"></script>
+  <script src="./scripts/leaflet.markercluster.js"></script>
+  <script src="./scripts/Control.Geocoder.js"></script>
   <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"
     integrity="sha512-5Xmrk9k1Xv/iFylGzXwhDkKyO55G3Rrt0kGJUqhGnrepJpkT16fDtuKpRyF1orUIYINEnE9UGU5BGslnkrUDaA=="
     crossorigin="anonymous"></script>
-
   <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-auth.js"
     integrity="sha512-sdGbjNkPw01B6XiEjVTD4QKW32lt07tbXaQ5SR0gW7yv3CG0Vha6IO7kA5hSlPZoMGMjAcwgpCFZopXZTcUd6Q=="
     crossorigin="anonymous"></script>
-
   <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-firestore.js"
     integrity="sha512-UVnN2RB9wp0tJ0Cc3Z0Vi9byWNUzQmZQMIDaLMvjNJVvY1xx18wUVZ5vTQLQ2p3LqeutnajHQRU33OenWRvKOQ=="
     crossorigin="anonymous"></script>
 
-  <link rel="stylesheet" href="style.css">
-
+  <!-- Firebase config data -->
   <script>
     var firebaseConfig = {
       apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
@@ -129,7 +124,7 @@
     firebase.initializeApp(firebaseConfig);
   </script>
 
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="./manifest.json">
 
 </head>
 
@@ -293,13 +288,12 @@
 
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js');
+      navigator.serviceWorker.register('./scripts/service-worker.js');
     }
   </script>
 
-
-  <script defer src="./app.js"></script>
-  <script defer src="./pwa.js"></script>
+  <script defer src="./scripts/app.js"></script>
+  <script defer src="./scripts/pwa.js"></script>
 </body>
 
 </html>

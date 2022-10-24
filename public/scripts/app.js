@@ -8,7 +8,13 @@ var position = {
         lng: 0
     }
 }
+
+// This file contains the code for the entire application, including the firebase and leaflet implementation
+
+// Leaflet.js popup
 var popup = L.popup();
+
+// Options parameter for user geolocation
 var options = {
     enableHighAccuracy: true,
     timeout: 5000,
@@ -17,7 +23,7 @@ var options = {
 
 var dogIcon = L.icon({
     iconUrl: './map-icons/dog-solid.svg',
-    shadowUrl: 'shadow.svg',
+    shadowUrl: './map-icons/shadow.svg',
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
@@ -28,7 +34,7 @@ var dogIcon = L.icon({
 
 var birdIcon = L.icon({
     iconUrl: './map-icons/dove-solid.svg',
-    shadowUrl: 'shadow.svg',
+    shadowUrl: './map-icons/shadow.svg',
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
@@ -39,7 +45,7 @@ var birdIcon = L.icon({
 
 var helpIcon = L.icon({
     iconUrl: './map-icons/paw-solid.svg',
-    shadowUrl: 'shadow.svg',
+    shadowUrl: './map-icons/shadow.svg',
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
@@ -50,7 +56,7 @@ var helpIcon = L.icon({
 
 var catIcon = L.icon({
     iconUrl: './map-icons/cat-solid.svg',
-    shadowUrl: 'shadow.svg',
+    shadowUrl: './map-icons/shadow.svg',
 
     iconSize: [45, 50], // size of the icon
     shadowSize: [50, 64], // size of the shadow
@@ -59,6 +65,7 @@ var catIcon = L.icon({
     popupAnchor: [10, -30] // point from which the popup should open relative to the iconAnchor
 });
 
+// Setting the default map view (Malaysia)
 mymap = L.map('mapid').setView([4.225128, 102.249195], 8);
 
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
@@ -91,8 +98,8 @@ function success(position) {
     userlongitude = position.coords.longitude;
 
     // Debugging
-    console.log(position.coords.latitude);
-    console.log(position.coords.longitude);
+    // console.log(position.coords.latitude);
+    // console.log(position.coords.longitude);
 
     updateMap();
 
@@ -109,8 +116,8 @@ function onMapClick(e) {
         .openOn(mymap);
 }
 
+// Register the function so that it activates when the user clicks on the map
 mymap.on('click', onMapClick);
-
 
 function updateMap() {
     mymap.setView([userlatitude, userlongitude], 15);
@@ -173,6 +180,68 @@ var markerClusters = L.markerClusterGroup()
 
 // mymap.addLayer(markerClusters)
 
+async function addPetCoords() {
+
+    // Use the server timestamp instead of client so that the data stays consistent
+
+    const { serverTimestamp } = firebase.firestore.FieldValue;
+
+    url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${mymap.getCenter().lat}&lon=${mymap.getCenter().lng}&zoom=18&addressdetails=1`;
+
+    // Debugging
+    // console.info('URL to fetch: ' + url);
+    // console.info('Latitude to fetch:' + mymap.getCenter().lat);
+    // console.info('Longitude to fetch:' + mymap.getCenter().lng);
+
+    await fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
+
+    console.info('Address: ' + addressDisplayName);
+
+    await petCoordsRef.add({
+        coords: [mymap.getCenter().lat, mymap.getCenter().lng],
+        uid: user.uid,
+        donate: document.getElementById('donate').checked,
+        createdAt: serverTimestamp(),
+        addressName: addressDisplayName,
+        creatorName: document.getElementById('creatorName').value,
+        creatorPhone: document.getElementById('creatorPhone').value,
+        petImage: document.getElementById('petImage').value,
+    });
+
+    // Clear the form
+
+    document.getElementById('creatorName').value = '';
+    document.getElementById('creatorPhone').value = '';
+    document.getElementById('petImage').value = '';
+    document.getElementById('donate').checked = false;
+}
+
+async function deleteDocbyID(button) {
+    // Delete a coordinate using the id of the x icon
+    id = button.getAttribute('data-docid');
+
+    // Get the coords from the doc id 
+    var docIDToDelete = await petCoordsRef.doc(id).get();
+
+    // Loop through the markers array and find the marker that matches the coords of the document
+    for (let i = 0; i < markers.length; i++) {
+        if (markers[i]._latlng.lat == docIDToDelete.data().coords[0] && markers[i]._latlng.lng == docIDToDelete.data().coords[1]) {
+
+            // Remove the marker from the map
+            markerClusters.removeLayer(markers[i])
+
+            // Remove the marker from the array
+            markers.splice(i, 1);
+            break;
+        }
+    }
+
+    // Finally, delete the document
+    await petCoordsRef.doc(id).delete();
+
+
+}
+
 auth.onAuthStateChanged(user => {
     if (user) {
 
@@ -195,45 +264,7 @@ auth.onAuthStateChanged(user => {
 
         // Database Reference
 
-        petCoordsRef = db.collection('pet-coords')
-
-        async function addPetCoords() {
-
-            // Use the server timestamp instead of client so that the data stays consistent
-
-            const { serverTimestamp } = firebase.firestore.FieldValue;
-
-            url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${mymap.getCenter().lat}&lon=${mymap.getCenter().lng}&zoom=18&addressdetails=1`;
-
-            // Debugging
-            // console.info('URL to fetch: ' + url);
-            // console.info('Latitude to fetch:' + mymap.getCenter().lat);
-            // console.info('Longitude to fetch:' + mymap.getCenter().lng);
-
-            await fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
-
-            console.info('Address: ' + addressDisplayName);
-
-            await petCoordsRef.add({
-                coords: [mymap.getCenter().lat, mymap.getCenter().lng],
-                uid: user.uid,
-                donate: document.getElementById('donate').checked,
-                createdAt: serverTimestamp(),
-                addressName: addressDisplayName,
-                creatorName: document.getElementById('creatorName').value,
-                creatorPhone: document.getElementById('creatorPhone').value,
-                petImage: document.getElementById('petImage').value,
-            });
-
-            // Clear the form
-
-            document.getElementById('creatorName').value = '';
-            document.getElementById('creatorPhone').value = '';
-            document.getElementById('petImage').value = '';
-            document.getElementById('donate').checked = false;
-
-            // location.reload()
-        }
+        let petCoordsRef = db.collection('pet-coords')
 
         createThing.onclick = () => {
 
@@ -243,7 +274,7 @@ auth.onAuthStateChanged(user => {
 
         // Read and write data displayed to the owner of the marker only
 
-        unsubscribe = petCoordsRef.where('uid', '==', user.uid)
+        personalMarkerSubscribe = petCoordsRef.where('uid', '==', user.uid)
             .onSnapshot(querySnapshot => {
 
                 const items = querySnapshot.docs.map(doc => {
@@ -275,12 +306,11 @@ auth.onAuthStateChanged(user => {
             });
 
         // Debugging
-        // console.log("Here!")
-        // console.log(markers)
+        // console.log("Marker array: " str(markers))
 
         // Read-only data displayed to all logged in users
 
-        unsubscribe2 = petCoordsRef
+        publicMarkerSubscribe = petCoordsRef
 
             // Queries the firestore API for a snapshot of the documents
             // Updates on any document change
@@ -295,7 +325,7 @@ auth.onAuthStateChanged(user => {
                     // If the user didn't specify any values, give a fallback value 
 
                     if (docs.data().petImage == undefined) {
-                        petImage = "./blank-cat.jpg"
+                        petImage = "./map-icons/blank-cat.jpg"
                     } else {
                         petImage = docs.data().petImage
 
@@ -313,8 +343,9 @@ auth.onAuthStateChanged(user => {
                         creatorPhone = docs.data().creatorPhone
                     }
 
-                    var newMarker = new L.marker([docs.data().coords[0], docs.data().coords[1]], { icon: catIcon }).bindPopup(`${docs.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${docs.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
+                    let newMarker = new L.marker([docs.data().coords[0], docs.data().coords[1]], { icon: catIcon }).bindPopup(`${docs.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${docs.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
                     
+
                     // Debugging
                     // console.log(newMarker)
                     // console.log(markers.includes(newMarker))
@@ -359,36 +390,12 @@ auth.onAuthStateChanged(user => {
         whenSignedOut.style.display = "block";
 
         // Unsubscribe when the user signs out
-        unsubscribe && unsubscribe2 && unsubscribe();
+        personalMarkerSubscribe && publicMarkerSubscribe && unsubscribe();
 
     }
 });
 
 
 
-async function deleteDocbyID(button) {
-    // Delete a coordinate using the id of the x icon
-    id = button.getAttribute('data-docid');
 
-    // Get the coords from the doc id 
-    var docIDToDelete = await petCoordsRef.doc(id).get();
-
-    // Loop through the markers array and find the marker that matches the coords of the document
-    for (let i = 0; i < markers.length; i++) {
-        if (markers[i]._latlng.lat == docIDToDelete.data().coords[0] && markers[i]._latlng.lng == docIDToDelete.data().coords[1]) {
-
-            // Remove the marker from the map
-            markerClusters.removeLayer(markers[i])
-
-            // Remove the marker from the array
-            markers.splice(i, 1);
-            break;
-        }
-    }
-
-    // Finally, delete the document
-    await petCoordsRef.doc(id).delete();
-
-
-}
 
