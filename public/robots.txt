@@ -1,6 +1,0 @@
-# Allow any user-agent to crawl the web page
-
-User-agent: *
-Allow: /
-
-# The web app does not need a sitemap
