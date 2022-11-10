@@ -8,6 +8,12 @@ import PageHero from './components/PageHero.vue'
     <PageHero msg="Paws2Help" />
   </header>
 
+    <AuthenticationSection />
+
+    <MapView />
+
+    <PetListing />
+
 </template>
 
 <style scoped>

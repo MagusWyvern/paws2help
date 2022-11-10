@@ -34,6 +34,7 @@ defineProps({
 
 .hero {
     border-radius: 10px;
+    width: 100%;
 }
 
 </style>
