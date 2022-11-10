@@ -1,5 +1,5 @@
 <script setup>
-// Firebase Implementation starts here
+import { getAuth, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 
 const signInBtn = document.getElementById('signInBtn');
 const signOutBtn = document.getElementById('signOutBtn');
@@ -7,7 +7,9 @@ const facebookSignInBtn = document.getElementById('facebookSignInBtn');
 
 
 onAuthStateChanged(auth, user => { /* check status */ });
-// const auth = firebase.auth();
+const auth = getAuth(firebaseApp);
+console.log("info:" + auth)
+
 // const provider = new firebase.auth.GoogleAuthProvider();
 // const facebookProvider = new firebase.auth.FacebookAuthProvider();
 

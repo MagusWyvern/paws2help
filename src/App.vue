@@ -14,6 +14,7 @@ const firebaseApp = initializeApp({
   measurementId: "G-3PVKXCEFW3"
 });
 const auth = getAuth(firebaseApp);
+console.log(auth)
 
 </script>
 
