@@ -5,61 +5,64 @@ const signInBtn = document.getElementById('signInBtn');
 const signOutBtn = document.getElementById('signOutBtn');
 const facebookSignInBtn = document.getElementById('facebookSignInBtn');
 
-const auth = firebase.auth();
-const provider = new firebase.auth.GoogleAuthProvider();
-const facebookProvider = new firebase.auth.FacebookAuthProvider();
 
-/// Sign in and sign out button event handlers
+onAuthStateChanged(auth, user => { /* check status */ });
+// const auth = firebase.auth();
+// const provider = new firebase.auth.GoogleAuthProvider();
+// const facebookProvider = new firebase.auth.FacebookAuthProvider();
 
-signInBtn.onclick = () => auth.signInWithPopup(provider);
-facebookSignInBtn.onclick = () => auth.signInWithPopup(facebookProvider);
+// /// Sign in and sign out button event handlers
 
-signOutBtn.onclick = () => auth.signOut() && location.reload();
+// signInBtn.onclick = () => auth.signInWithPopup(provider);
 
-const whenSignedIn = document.getElementById('whenSignedIn');
-const whenSignedOut = document.getElementById('whenSignedOut');
-const userDetails = document.getElementById('userDetails');
+// signOutBtn.onclick = () => auth.signOut() && location.reload();
 
-auth.onAuthStateChanged(user => {
-    if (user) {
+// const whenSignedIn = document.getElementById('whenSignedIn');
+// const whenSignedOut = document.getElementById('whenSignedOut');
+// const userDetails = document.getElementById('userDetails');
 
-        // This is what is shown to the user when it's signed in
+// auth.onAuthStateChanged(user => {
+//     if (user) {
 
-        whenSignedIn.style.visibility = "visible";
-        whenSignedOut.style.visibility = "hidden";
-        signInBtn.style.visibility = "hidden";
-        facebookSignInBtn.style.visibility = "hidden";
+//         // This is what is shown to the user when it's signed in
 
-        signOutBtn.style.display = "block";
-        whenSignedIn.style.display = "block";
-        whenSignedOut.style.display = "none";
-        signInBtn.style.display = "none";
-        facebookSignInBtn.style.display = "none";
+//         whenSignedIn.style.visibility = "visible";
+//         whenSignedOut.style.visibility = "hidden";
+//         signInBtn.style.visibility = "hidden";
+//         facebookSignInBtn.style.visibility = "hidden";
 
-        // Personalize userDetails section for each user
+//         signOutBtn.style.display = "block";
+//         whenSignedIn.style.display = "block";
+//         whenSignedOut.style.display = "none";
+//         signInBtn.style.display = "none";
+//         facebookSignInBtn.style.display = "none";
 
-        userDetails.innerHTML = `<img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br><h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br><p> ${user.phoneNumber ? user.phoneNumber : ''}</p>`;
+//         // Personalize userDetails section for each user
 
-    } else {
+//         userDetails.innerHTML = `<img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br><h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br><p> ${user.phoneNumber ? user.phoneNumber : ''}</p>`;
 
-        // This is what is shown to the user when it's not signed in
+//     } else {
 
-        whenSignedIn.style.visibility = "hidden";
-        whenSignedOut.style.visibility = "visible";
-        userDetails.innerHTML = '';
+//         // This is what is shown to the user when it's not signed in
 
-        signOutBtn.style.display = "none"
-        whenSignedIn.style.display = "none";
-        whenSignedOut.style.display = "block";
+//         whenSignedIn.style.visibility = "hidden";
+//         whenSignedOut.style.visibility = "visible";
+//         userDetails.innerHTML = '';
 
-        // Unsubscribe when the user signs out
-        // personalMarkerSubscribe && publicMarkerSubscribe && unsubscribe();
+//         signOutBtn.style.display = "none"
+//         whenSignedIn.style.display = "none";
+//         whenSignedOut.style.display = "block";
 
-    }
-});
+//         // Unsubscribe when the user signs out
+//         // personalMarkerSubscribe && publicMarkerSubscribe && unsubscribe();
+
+//     }
+// });
 </script>
 
 <template>
-    
+    <button id="signInBtn">Sign In</button>
+    <button id="signOutBtn">Sign Out</button>
+
 
 </template>
