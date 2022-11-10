@@ -1,6 +1,7 @@
 <script setup>
 import 'bulma/css/bulma.css'
 import PageHero from './components/PageHero.vue'
+import AuthenticationSection from './components/AuthenticationSection.vue';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 
