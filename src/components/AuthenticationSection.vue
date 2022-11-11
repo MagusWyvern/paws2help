@@ -1,6 +1,10 @@
 <script setup>
+import { ref, onMounted } from 'vue';
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
+
+
+
 
 const firebaseApp = initializeApp({
     apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
@@ -12,69 +16,91 @@ const firebaseApp = initializeApp({
     measurementId: "G-3PVKXCEFW3"
 });
 
-const signInBtn = document.getElementById('signInBtn');
-const signOutBtn = document.getElementById('signOutBtn');
-const facebookSignInBtn = document.getElementById('facebookSignInBtn');
 
-const auth2 = getAuth(firebaseApp);
-console.log("info:" + auth2)
 
-// const provider = new firebase.auth.GoogleAuthProvider();
-// const facebookProvider = new firebase.auth.FacebookAuthProvider();
+const auth = getAuth(firebaseApp);
 
-// /// Sign in and sign out button event handlers
+const provider = new GoogleAuthProvider();
 
-// signInBtn.onclick = () => auth.signInWithPopup(provider);
+onMounted(() => {
+    const signInBtn = document.getElementById('signInBtn');
+    const signOutBtn = document.getElementById('signOutBtn');
+    signInBtn.onclick = () => signInWithRedirect(auth, provider);
+    signOutBtn.onclick = () => auth.signOut() && location.reload();
+})
 
-// signOutBtn.onclick = () => auth.signOut() && location.reload();
+/// Sign in and sign out button event handlers
 
-// const whenSignedIn = document.getElementById('whenSignedIn');
-// const whenSignedOut = document.getElementById('whenSignedOut');
-// const userDetails = document.getElementById('userDetails');
+getRedirectResult(auth)
+    .then((result) => {
+        // This gives you a Google Access Token. You can use it to access Google APIs.
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
 
-// auth.onAuthStateChanged(user => {
-//     if (user) {
+        // The signed-in user info.
+        const user = result.user;
 
-//         // This is what is shown to the user when it's signed in
+        console.log(user.displayName)
+    }).catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        // const email = error.customData.email;
+        // The AuthCredential type that was used.
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        // ...
+    });
 
-//         whenSignedIn.style.visibility = "visible";
-//         whenSignedOut.style.visibility = "hidden";
-//         signInBtn.style.visibility = "hidden";
-//         facebookSignInBtn.style.visibility = "hidden";
+const whenSignedIn = document.getElementById('whenSignedIn');
+const whenSignedOut = document.getElementById('whenSignedOut');
+const userDetails = document.getElementById('userDetails');
 
-//         signOutBtn.style.display = "block";
-//         whenSignedIn.style.display = "block";
-//         whenSignedOut.style.display = "none";
-//         signInBtn.style.display = "none";
-//         facebookSignInBtn.style.display = "none";
+auth.onAuthStateChanged(user => {
+    if (user) {
 
-//         // Personalize userDetails section for each user
+        // This is what is shown to the user when it's signed in
 
-//         userDetails.innerHTML = `<img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br><h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br><p> ${user.phoneNumber ? user.phoneNumber : ''}</p>`;
+        // whenSignedIn.style.visibility = "visible";
+        // whenSignedOut.style.visibility = "hidden";
+        // signInBtn.style.visibility = "hidden";
 
-//     } else {
+        // signOutBtn.style.display = "block";
+        // whenSignedIn.style.display = "block";
+        // whenSignedOut.style.display = "none";
+        // signInBtn.style.display = "none";
 
-//         // This is what is shown to the user when it's not signed in
+        // Personalize userDetails section for each user
 
-//         whenSignedIn.style.visibility = "hidden";
-//         whenSignedOut.style.visibility = "visible";
-//         userDetails.innerHTML = '';
+        // userDetails.innerHTML = `<img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br><h3>Hello ${user.displayName}! You are currently signed in</h3> <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br><p> ${user.phoneNumber ? user.phoneNumber : ''}</p>`;
 
-//         signOutBtn.style.display = "none"
-//         whenSignedIn.style.display = "none";
-//         whenSignedOut.style.display = "block";
+    } else {
 
-//         // Unsubscribe when the user signs out
-//         // personalMarkerSubscribe && publicMarkerSubscribe && unsubscribe();
+        // This is what is shown to the user when it's not signed in
 
-//     }
-// });
+        onMounted(() => {
+            // whenSignedIn.style.visibility = "hidden";
+            // whenSignedOut.style.visibility = "visible";
+            // userDetails.innerHTML = '';
+
+            // signOutBtn.style.display = "none"
+            // whenSignedIn.style.display = "none";
+            // whenSignedOut.style.display = "block";
+
+        })
+
+        // Unsubscribe when the user signs out
+        // personalMarkerSubscribe && publicMarkerSubscribe && unsubscribe();
+
+    }
+});
 </script>
 
 <template>
-    <h3>ajsdjasdj</h3>
-    <button id="signInBtn">Sign In</button>
-    <button id="signOutBtn">Sign Out</button>
+
+    <h3></h3>
+    <button id="signInBtn" class="button">Sign In with Google</button>
+    <button id="signOutBtn" class="button is-danger">Sign Out</button>
 
 
 </template>
