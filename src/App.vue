@@ -2,6 +2,7 @@
 import 'bulma/css/bulma.css'
 import PageHero from './components/PageHero.vue'
 import AuthenticationSection from './components/AuthenticationSection.vue';
+
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 
@@ -14,8 +15,8 @@ const firebaseApp = initializeApp({
   appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
   measurementId: "G-3PVKXCEFW3"
 });
+
 const auth = getAuth(firebaseApp);
-console.log(auth)
 
 </script>
 

@@ -20,7 +20,7 @@ defineProps({
                         {{ msg }}
                 </p>
             </div>
-            <p class="subtitle">Paws2Help is a web application that allows you to give and adopt cats.</p>
+            <p class="subtitle">Helping the community to care for cats around the country &#60;3 </p>
         </div>
     </section>
 </template>
