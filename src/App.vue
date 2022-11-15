@@ -2,6 +2,7 @@
 import 'bulma/css/bulma.css'
 import PageHero from './components/PageHero.vue'
 import AuthenticationSection from './components/AuthenticationSection.vue';
+import MapView from './components/MapView.vue'
 
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
@@ -27,9 +28,10 @@ const auth = getAuth(firebaseApp);
 
   <AuthenticationSection />
 
-  <!-- <MapView />
+  
+  <MapView />
 
-    <PetListing /> -->
+  <!-- <PetListing /> -->
 
 </template>
 
