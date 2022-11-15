@@ -2,22 +2,37 @@
 import 'leaflet/dist/leaflet.js'
 import "leaflet/dist/leaflet.css";
 import { ref, onMounted } from 'vue'
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
-import { getAuth, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+
+var markers = new Array();
+
+var firebaseConfig = {
+    apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
+    authDomain: "petscircle.firebaseapp.com",
+    projectId: "petscircle",
+    storageBucket: "petscircle.appspot.com",
+    messagingSenderId: "195232543538",
+    appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
+    measurementId: "G-3PVKXCEFW3"
+};
 
 const firebaseApp = initializeApp({
-  apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
-  authDomain: "petscircle.firebaseapp.com",
-  projectId: "petscircle",
-  storageBucket: "petscircle.appspot.com",
-  messagingSenderId: "195232543538",
-  appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
-  measurementId: "G-3PVKXCEFW3"
+    apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
+    authDomain: "petscircle.firebaseapp.com",
+    projectId: "petscircle",
+    storageBucket: "petscircle.appspot.com",
+    messagingSenderId: "195232543538",
+    appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
+    measurementId: "G-3PVKXCEFW3"
 });
 
-const auth = getAuth(firebaseApp);
-// const db = getFirestore(app);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// Initialize Cloud Firestore and get a reference to the service
+const db = getFirestore(app);
+
 
 let userlatitude = 0;
 let userlongitude = 0;
@@ -106,73 +121,47 @@ function onMapClick(e) {
         .setContent("You clicked the map at " + e.latlng.toString())
         .openOn(mymap);
 }
-let petCoordsRef = db.collection('pet-coords')
 
-publicMarkerSubscribe = petCoordsRef
+const querySnapshot = await getDocs(collection(db, "pet-coords"));
 
-    
-    // Queries the firestore API for a snapshot of the documents
-    // Updates on any document change
+querySnapshot.forEach((doc) => {
 
-    .onSnapshot(querySnapshot => {
+    if (doc.data().petImage == undefined) {
+        petImage = ""
+    } else {
+        petImage = docs.data().petImage
 
-        markers = new Array()
-        markerClusters = L.markerClusterGroup()
+    }
 
-        querySnapshot.docs.map(docs => {
+    if (doc.data().creatorName == undefined) {
+        creatorName = "Anonymous"
+    } else {
+        creatorName = docs.data().creatorName
+    }
 
-            // If the user didn't specify any values, give a fallback value 
+    if (doc.data().creatorPhone == undefined) {
+        creatorPhone = "No phone number provided"
+    } else {
+        creatorPhone = doc.data().creatorPhone
+    }
 
-            if (docs.data().petImage == undefined) {
-                petImage = "./map-icons/blank-cat.jpg"
-            } else {
-                petImage = docs.data().petImage
+    let newMarker = new L.marker([doc.data().coords[0], doc.data().coords[1]], { icon: catIcon }).bindPopup(`${doc.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${doc.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
 
-            }
-
-            if (docs.data().creatorName == undefined) {
-                creatorName = "Anonymous"
-            } else {
-                creatorName = docs.data().creatorName
-            }
-
-            if (docs.data().creatorPhone == undefined) {
-                creatorPhone = "No phone number provided"
-            } else {
-                creatorPhone = docs.data().creatorPhone
-            }
-
-            let newMarker = new L.marker([docs.data().coords[0], docs.data().coords[1]], { icon: catIcon }).bindPopup(`${docs.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${docs.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
-
-
-            // Debugging
-            // console.log(newMarker)
-            // console.log(markers.includes(newMarker))
-
-            // Compare the new marker against every marker in the array
-
-            if (markers.includes(newMarker) == false) {
-                markers.push(newMarker);
-                // markerClusters.addLayer(newMarker);
-            } else {
-                console.info('Marker already exists');
-            }
-
-        });
-
-        for (let i = 0; i < markers.length; i++) {
-            if (markerClusters.hasLayer(markers[i]) == false) {
-                markerClusters.addLayer(markers[i])
-            } else {
-                console.info('Marker already in cluster')
-            }
+    for (let i = 0; i < markers.length; i++) {
+        if (markerClusters.hasLayer(markers[i]) == false) {
+            markerClusters.addLayer(markers[i])
+        } else {
+            console.info('Marker already in cluster')
         }
+    }
 
-        mymap.addLayer(markerClusters)
+    console.log(`${doc.id} => ${doc.data().addressName}`);
+});
 
-        console.info('Current markers array length: ' + markers.length)
+mymap.addLayer(markerClusters)
 
-    });
+
+
 
 </script>
 
