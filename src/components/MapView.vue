@@ -1,11 +1,10 @@
 <script setup>
 import "leaflet/dist/leaflet.js";
 import "leaflet/dist/leaflet.css";
+import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 import { ref, onMounted } from 'vue';
 import { initializeApp } from "firebase/app";
 import { getFirestore, query, collection, onSnapshot } from "firebase/firestore";
-import 'leaflet.markercluster/dist/leaflet.markercluster.js';
-
 
 let petImage
 let creatorPhone
