@@ -77,15 +77,50 @@ auth.onAuthStateChanged(user => {
 
         signOutButton.style.display = "none"
         userDetails.innerHTML = '';
-        
+
         // Unsubscribe when the user signs out
         // personalMarkerSubscribe && publicMarkerSubscribe && unsubscribe();
 
     }
-});
+
+    const q2 = query(collection(db, "pet-coords"), where("uid", "==", user.uid));
+
+    const unsubscribe = onSnapshot(q2, (querySnapshot) => {
+        const cities = [];
+
+        querySnapshot.forEach((doc) => {
+
+            console.log(JSON.stringify(doc.data()))
+            items = []
+            
+            if (doc.data().uid == user.uid) {
+                return `
+                    <div class="box">
+                        <div class="columns">
+                            <div class="column">
+                                <li id="${doc.id}">Latitude: ${doc.data().coords[0]}, Longitude: ${doc.data().coords[1]}</li>
+                                <strong>${doc.data().addressName.toLocaleString()}</strong> <br>
+                                <small>${doc.data().createdAt.toDate().toDateString()}</small>
+                            </div>
+     
+                            <div class="column">
+                                <button data-docid="${doc.id}" id="deleteBtn" class="button" onclick="deleteDocbyID(this)">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                    `} else {
+            }
+        });
+
+        coordsList.innerHTML = items.join('');
+
+    })
+})
 </script>
 
 <template>
+
+
 
     <div>
         <button id="signInButton" class="button">Sign In with Google</button><br><br>
@@ -93,6 +128,10 @@ auth.onAuthStateChanged(user => {
 
     <div class="box" id="userDetails"></div>
 
+
+
+    <div id="coordsList"></div>
+    
     <div>
         <button id="signOutButton" class="button is-danger">Sign Out</button>
     </div>

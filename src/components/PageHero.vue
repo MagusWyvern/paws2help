@@ -23,6 +23,8 @@ defineProps({
             <p class="subtitle">Helping the community to care for cats around the country &#60;3 </p>
         </div>
     </section>
+
+    
 </template>
 
 <style scoped>

@@ -163,15 +163,11 @@ onMounted(() => {
                 console.info('Marker already exists');
             }
         });
-        for (let i = 0; i < markers.length; i++) {
-            if (markerClusters.hasLayer(markers[i]) == false) {
-                markerClusters.addLayer(markers[i])
-            } else {
-                console.info('Marker already in cluster')
-            }
-        }
 
-        mymap.addLayer(markerClusters)
+        
+        for (let i = 0; i < markers.length; i++) {
+            mymap.addLayer(markers[i])
+        }
 
         console.info('Current markers array length: ' + markers.length)
         console.log("Loaded address names: ", cities.join(", "));
