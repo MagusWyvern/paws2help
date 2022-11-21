@@ -42,7 +42,6 @@ const auth = getAuth(firebaseApp);
 
   <AuthenticationSection />
 
-
   <MapView />
 
   <PetListing />

@@ -2,6 +2,17 @@
 import { ref, onMounted } from 'vue';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
+import { getFirestore, query, collection, onSnapshot, where } from "firebase/firestore";
+let items
+var firebaseConfig = {
+    apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
+    authDomain: "petscircle.firebaseapp.com",
+    projectId: "petscircle",
+    storageBucket: "petscircle.appspot.com",
+    messagingSenderId: "195232543538",
+    appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
+    measurementId: "G-3PVKXCEFW3"
+};
 
 const firebaseApp = initializeApp({
     apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
@@ -12,6 +23,12 @@ const firebaseApp = initializeApp({
     appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
     measurementId: "G-3PVKXCEFW3"
 });
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// Initialize Cloud Firestore and get a reference to the service
+const db = getFirestore(app);
 
 const auth = getAuth(firebaseApp);
 const provider = new GoogleAuthProvider();
@@ -83,32 +100,41 @@ auth.onAuthStateChanged(user => {
 
     }
 
-    const q2 = query(collection(db, "pet-coords"), where("uid", "==", user.uid));
+    // Query all the markers where the current user made it
+    const personalMarkersQuery = query(collection(db, "pet-coords"));
 
-    const unsubscribe = onSnapshot(q2, (querySnapshot) => {
+    items = []
+
+    const unsubscribe = onSnapshot(personalMarkersQuery, (querySnapshot) => {
         const cities = [];
 
         querySnapshot.forEach((doc) => {
 
             console.log(JSON.stringify(doc.data()))
-            items = []
-            
+
+
+
+            let listItemToPush
+
             if (doc.data().uid == user.uid) {
-                return `
-                    <div class="box">
-                        <div class="columns">
-                            <div class="column">
-                                <li id="${doc.id}">Latitude: ${doc.data().coords[0]}, Longitude: ${doc.data().coords[1]}</li>
+
+                listItemToPush = `
+                    <div class="box" style="width: 75%">
+
+                                <li style="list-style: none;" id="${doc.id}">Latitude: ${doc.data().coords[0]}, Longitude: ${doc.data().coords[1]}</li>
                                 <strong>${doc.data().addressName.toLocaleString()}</strong> <br>
-                                <small>${doc.data().createdAt.toDate().toDateString()}</small>
-                            </div>
-     
-                            <div class="column">
+                                <small>${doc.data().createdAt.toDate().toDateString()}</small> <br>
+
+
                                 <button data-docid="${doc.id}" id="deleteBtn" class="button" onclick="deleteDocbyID(this)">Delete</button>
-                            </div>
-                        </div>
                     </div>
-                    `} else {
+                    `
+                
+                items.push(listItemToPush)
+                
+                console.log("Current items array: " + items)
+
+                } else {
             }
         });
 
@@ -131,7 +157,7 @@ auth.onAuthStateChanged(user => {
 
 
     <div id="coordsList"></div>
-    
+
     <div>
         <button id="signOutButton" class="button is-danger">Sign Out</button>
     </div>

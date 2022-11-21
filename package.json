@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "bulma": "^0.9.4",
+    "crypto-js": "^4.1.1",
     "firebase": "^9.13.0",
     "leaflet.markercluster": "^1.5.3",
     "vue": "^3.2.38"
