@@ -4,7 +4,11 @@ import "leaflet/dist/leaflet.css";
 import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 import { ref, onMounted } from 'vue';
 import { initializeApp } from "firebase/app";
-import { getFirestore, query, collection, onSnapshot, doc, setDoc } from "firebase/firestore";
+import { getFirestore, query, collection, onSnapshot, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { getCurrentUser } from '../authenticateUser'
+import { catIcon } from './icons/LeafletIcon'
+import { addPetCoords } from '../addPetCoords'
+
 // dec2hex :: Integer -> String
 // i.e. 0-255 -> '00'-'ff'
 function dec2hex (dec) {
@@ -18,60 +22,12 @@ function generateId (len) {
   return Array.from(arr, dec2hex).join('')
 }
 
-console.log(generateId())
-// "82defcf324571e70b0521d79cce2bf3fffccd69"
-
-console.log(generateId(20))
-// "c1a050a4cd1556948d41"
 let mymap
 let petImage
 let creatorPhone
 let creatorName
+
 var markerClusters = L.markerClusterGroup()
-var dogIcon = L.icon({
-    iconUrl: '/map-icons/dog-solid.svg',
-    shadowUrl: '/map-icons/shadow.svg',
-
-    iconSize: [45, 50], // size of the icon
-    shadowSize: [50, 64], // size of the shadow
-    iconAnchor: [10, 45], // point of the icon which will correspond to marker's location
-    shadowAnchor: [4, 62],  // the same for the shadow
-    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
-});
-
-var birdIcon = L.icon({
-    iconUrl: '/map-icons/dove-solid.svg',
-    shadowUrl: '/map-icons/shadow.svg',
-
-    iconSize: [45, 50], // size of the icon
-    shadowSize: [50, 64], // size of the shadow
-    iconAnchor: [10, 45], // point of the icon which will correspond to marker's location
-    shadowAnchor: [4, 62],  // the same for the shadow
-    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
-});
-
-var helpIcon = L.icon({
-    iconUrl: '/map-icons/paw-solid.svg',
-    shadowUrl: '/map-icons/shadow.svg',
-
-    iconSize: [45, 50], // size of the icon
-    shadowSize: [50, 64], // size of the shadow
-    iconAnchor: [10, 45], // point of the icon which will correspond to marker's location
-    shadowAnchor: [4, 62],  // the same for the shadow
-    popupAnchor: [10, -30] // point from which the popup should open relative to the iconAnchor
-});
-
-var catIcon = L.icon({
-    iconUrl: '/map-icons/cat-solid.svg',
-    shadowUrl: '/map-icons/shadow.svg',
-
-    iconSize: [45, 50], // size of the icon
-    shadowSize: [50, 64], // size of the shadow
-    iconAnchor: [10, 45], // point of the icon which will correspond to marker's location
-    shadowAnchor: [4, 62],  // the same for the shadow
-    popupAnchor: [10, -30] // point from which the popup should open relative to the iconAnchor
-});
-
 var markers = new Array();
 
 var firebaseConfig = {
@@ -149,6 +105,9 @@ onMounted(() => {
 
     initializeMap()
 
+    let user = getCurrentUser()
+    console.info("The current user (MapView.vue)" + user)
+
     // Query the data from Firestore, then plot it on the map with Leaflet icons
 
     const markersQuery = query(collection(db, "pet-coords"));
@@ -199,41 +158,7 @@ onMounted(() => {
 
     });
 
-    function addPetCoords() {
 
-        // Use the server timestamp instead of client so that the data stays consistent
-
-        let url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${mymap.getCenter().lat}&lon=${mymap.getCenter().lng}&zoom=18&addressdetails=1`;
-
-        // Debugging
-        // console.info('URL to fetch: ' + url);
-        // console.info('Latitude to fetch:' + mymap.getCenter().lat);
-        // console.info('Longitude to fetch:' + mymap.getCenter().lng);
-
-        let addressDisplayName
-
-        fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
-
-        console.info('Address: ' + addressDisplayName);
-
-        setDoc(doc(db, "pet-coords", generateId(20)), {
-            coords: [mymap.getCenter().lat, mymap.getCenter().lng],
-            uid: user.uid,
-            donate: document.getElementById('donate').checked,
-            createdAt: serverTimestamp(),
-            addressName: addressDisplayName,
-            creatorName: document.getElementById('creatorName').value,
-            creatorPhone: document.getElementById('creatorPhone').value,
-            petImage: document.getElementById('petImage').value,
-        });
-
-        // Clear the form
-
-        document.getElementById('creatorName').value = '';
-        document.getElementById('creatorPhone').value = '';
-        document.getElementById('petImage').value = '';
-        document.getElementById('donate').checked = false;
-    }
 
     function deleteDocbyID(button) {
         // Delete a coordinate using the id of the x icon
@@ -265,7 +190,7 @@ onMounted(() => {
 
     createThing.onclick = () => {
 
-        addPetCoords();
+        addPetCoords(mymap.getCenter().lat, mymap.getCenter().lng, getCurrentUser().uid);
 
     }
 
