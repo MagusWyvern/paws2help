@@ -30,8 +30,17 @@ onMounted(() => {
     const signOutButton = document.getElementById('signOutButton');
     const userDetails = document.getElementById('userDetails');
     const signInNowSection = document.getElementById('signInNow')
+    const coordsContainer = document.getElementById('coordsContainer')
 
     setupHTMLHandlers()
+
+    function deleteDocByID(button) {
+        // Delete a coordinate using the id of the x icon
+        id = button.getAttribute('id');
+
+        deleteDoc(doc(db, "pet-coords", id));
+
+    }
 })
 
 auth.onAuthStateChanged(user => {
@@ -43,6 +52,7 @@ auth.onAuthStateChanged(user => {
         // Hide the sign in buttion when a user is logged in
         signInButton.style.visibility = "hidden";
         signInButton.style.display = "none";
+        coordsContainer.style.display = "block"
 
         // Personalize userDetails section for each user
         userDetails.innerHTML = `
@@ -60,6 +70,7 @@ auth.onAuthStateChanged(user => {
         signOutButton.style.display = "none"
         userDetails.innerHTML = '';
         userDetails.style.display = "none"
+        coordsContainer.style.display = "none"
 
         // Unsubscribe from Firestore queries when the user signs out
         // personalMarkerSubscribe && publicMarkerSubscribe && unsubscribe();
@@ -88,27 +99,27 @@ auth.onAuthStateChanged(user => {
 
                     listItemToPush = `
                     <div class="card" style="width: 75%; border-radius: 10px">
-  <header class="card-header">
-    <p class="card-header-title">
-      ${doc.data().addressName.toLocaleString()}
-    </p>
-    <button class="card-header-icon" aria-label="more options">
-      <span class="icon">
-        <i class="fas fa-angle-down" aria-hidden="true"></i>
-      </span>
-    </button>
-  </header>
-  <div class="card-content">
-    <div class="content">
-        <li style="list-style: none;" id="${doc.id}"><b>Latitude: </b>${doc.data().coords[0]}, <b>Longitude: </b>${doc.data().coords[1]}</li>
-    </div>
-  </div>
-  <footer class="card-footer">
-    <a href="#" class="card-footer-item">Share</a>
-    <a href="#" class="card-footer-item">Edit</a>
-    <a href="#" class="card-footer-item has-background-danger has-text-primary-light">Delete</a>
-  </footer>
-</div><br><br>
+                        <header class="card-header">
+                            <p class="card-header-title">
+                                ${doc.data().addressName.toLocaleString()}
+                            </p>
+                            <button class="card-header-icon" aria-label="more options">
+                                <span class="icon">
+                                    <i class="fas fa-angle-down" aria-hidden="true"></i>
+                                </span>
+                            </button>
+                        </header>
+                        <div class="card-content">
+                            <div class="content">
+                                <li style="list-style: none;" id="${doc.id}"><b>Latitude: </b>${doc.data().coords[0]}, <b>Longitude: </b>${doc.data().coords[1]}</li>
+                            </div>
+                        </div>
+                        <footer class="card-footer">
+                            <a href="#" class="card-footer-item">Share</a>
+                            <a href="#" class="card-footer-item">Edit</a>
+                            <a href="#" class="card-footer-item has-background-danger has-text-primary-light" id="${doc.id}" onClick="">Delete</a>
+                        </footer>
+                    </div><br><br>
                         `
 
                     items.push(listItemToPush)
@@ -124,22 +135,31 @@ auth.onAuthStateChanged(user => {
         coordsList.innerHTML = items.join('');
 
     })
+
+
 })
 </script>
 
 <template>
     <div id="signInNow">
         <h1 class="title is-4">Ready to get started?</h1>
-    
+
         <p class="subtitle is-6">Sign in with your Google Account below to list your own cat for adoption!</p>
         <a href="./privacy.html">Privacy Policy</a><br>
         <button id="signInButton" class="button is-success">Sign In with Google</button><br><br>
 
     </div>
 
-    <div class="box" id="userDetails"></div>
+    <div class="box" id="userDetails"></div><br><br>
+    <center>
 
-    <div id="coordsList"></div>
+        <section id="coordsContainer">
+            <h1 class="title is-4">Registered Coordinates</h1>
+            <p class="subtitle is-6">This is the list of location(s) that you have registered using this account before:</p>
+            <div id="coordsList">
+            </div>
+        </section>
+    </center>
 
     <div>
         <button id="signOutButton" class="button is-danger">Sign Out</button>
@@ -157,6 +177,14 @@ div {
     flex-direction: column;
 }
 
+#coordsContainer {
+    padding-left: 2em;
+}
+
+.subtitle {
+    padding: 2em;
+}
+
 #userDetails {
     background-color: #85CEFF;
 }
@@ -164,4 +192,6 @@ div {
 #coordsList {
     padding: 2em
 }
+
+
 </style>

@@ -38,13 +38,15 @@ export async function addPetCoords(latitudeToFetch, longitudeToFetch, userUID) {
     // console.info('URL to fetch: ' + url);
 
     let addressDisplayName
+    let generatedUID = generateId(20)
 
     await fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
 
     console.info('Address: ' + addressDisplayName);
 
     // Create a new document at the Firestore collection with the inputted data
-    await setDoc(doc(db, "pet-coords", generateId(20)), {
+    await setDoc(doc(db, "pet-coords", generatedUID), {
+        buttonDocID: generatedUID,
         coords: [latitudeToFetch, longitudeToFetch],
         uid: userUID,
         donate: document.getElementById('donate').checked,

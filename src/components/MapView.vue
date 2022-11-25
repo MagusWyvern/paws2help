@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 import { ref, onMounted } from 'vue';
 import { initializeApp } from "firebase/app";
-import { getFirestore, query, collection, onSnapshot, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { getFirestore, query, collection, onSnapshot, doc, deleteDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getCurrentUser } from '../authenticateUser'
 import { donatingCatIcon, receivingCatIcon } from './icons/LeafletIcon'
 import { addPetCoords } from '../addPetCoords'
@@ -138,34 +138,6 @@ onMounted(() => {
         // console.log("Loaded address names: ", cities.join(", "));
 
     });
-
-
-
-    function deleteDocbyID(button) {
-        // Delete a coordinate using the id of the x icon
-        id = button.getAttribute('data-docid');
-
-        // Get the coords from the doc id 
-        var docIDToDelete = petCoordsRef.doc(id).get();
-
-        // Loop through the markers array and find the marker that matches the coords of the document
-        for (let i = 0; i < markers.length; i++) {
-            if (markers[i]._latlng.lat == docIDToDelete.data().coords[0] && markers[i]._latlng.lng == docIDToDelete.data().coords[1]) {
-
-                // Remove the marker from the map
-                markerClusters.removeLayer(markers[i])
-
-                // Remove the marker from the array
-                markers.splice(i, 1);
-                break;
-            }
-        }
-
-        // Finally, delete the document
-        petCoordsRef.doc(id).delete();
-
-
-    }
 
     let createThing = document.getElementById('createThing')
 

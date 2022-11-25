@@ -15,8 +15,8 @@
     <footer class="footer">
         <div class="content has-text-centered">
             <p>
-                <strong>Paws2Help</strong> by <a href="https://github.com/MagusWyvern">Adi Ahmad Danish</a> and Muhammad
-                Zaqwan.
+                <strong>Paws2Help</strong> by <a href="https://github.com/MagusWyvern">Adi Ahmad Danish</a> and <a href="https://instagram.com/zaqwaann">Muhammad
+                Zaqwan</a>.
                 The source
                 code is
                 licensed

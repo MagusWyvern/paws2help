@@ -10,6 +10,8 @@ import Footer from './components/Footer.vue'
 if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/service-worker.js');
     }
+
+
 </script>
 
 <template>
