@@ -12,9 +12,7 @@ import PetListing from './components/PetListing.vue'
     <PageHero msg="Paws2Help" />
   </header>
 
-  <div class="block">
-
-  </div>
+  <div class="block"></div>
 
   <div class="box">
     <h1 class="title is-4">What is this app for?</h1>
@@ -37,7 +35,7 @@ import PetListing from './components/PetListing.vue'
       <button class="delete" aria-label="delete"></button>
     </div>
     <div class="message-body">
-      Paws2Help is still in Alpha Development, bugs and errors may appear. Feel free to report them <a
+      Paws2Help is still in Alpha Development, bugs and errors may appear. Feel free to report them by sending an email <a
         href="mailto:maguswyvern@gmail.com">here!</a>
     </div>
   </article>
@@ -45,5 +43,11 @@ import PetListing from './components/PetListing.vue'
 </template>
 
 <style scoped>
+div .box {
+  padding-left: 2em;
+}
 
+div .message-header {
+  padding-left: 2em;
+}
 </style>

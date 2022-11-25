@@ -29,6 +29,7 @@ onMounted(() => {
     const signInButton = document.getElementById('signInButton');
     const signOutButton = document.getElementById('signOutButton');
     const userDetails = document.getElementById('userDetails');
+    const signInNowSection = document.getElementById('signInNow')
 
     setupHTMLHandlers()
 })
@@ -46,7 +47,7 @@ auth.onAuthStateChanged(user => {
         // Personalize userDetails section for each user
         userDetails.innerHTML = `
         <img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br>
-        <h3>Hello ${user.displayName}! You are currently signed in.</h3> 
+        <h3>Hello ${user.displayName}! You are currently signed in</h3> 
         <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br>
         <p> ${user.phoneNumber ? user.phoneNumber : ''}</p>
         `;
@@ -58,6 +59,7 @@ auth.onAuthStateChanged(user => {
         // Hide the sign out button and empty the user details section
         signOutButton.style.display = "none"
         userDetails.innerHTML = '';
+        userDetails.style.display = "none"
 
         // Unsubscribe from Firestore queries when the user signs out
         // personalMarkerSubscribe && publicMarkerSubscribe && unsubscribe();
@@ -66,9 +68,9 @@ auth.onAuthStateChanged(user => {
     // Query all the markers where the current user made it
     const personalMarkersQuery = query(collection(db, "pet-coords"));
 
-    
+
     const unsubscribe = onSnapshot(personalMarkersQuery, (querySnapshot) => {
-        
+
         // Empty the list every time a new snapshot is received
         items = []
 
@@ -108,9 +110,13 @@ auth.onAuthStateChanged(user => {
 </script>
 
 <template>
-
-    <div>
+    <div id="signInNow">
+        <h1 class="title is-4">Ready to get started?</h1>
+    
+        <p class="subtitle is-6">Sign in with your Google Account below to list your own cat for adoption!</p>
+        <a href="./privacy.html">Privacy Policy</a><br>
         <button id="signInButton" class="button">Sign In with Google</button><br><br>
+
     </div>
 
     <div class="box" id="userDetails"></div>
