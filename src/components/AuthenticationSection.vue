@@ -47,9 +47,9 @@ auth.onAuthStateChanged(user => {
         // Personalize userDetails section for each user
         userDetails.innerHTML = `
         <img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br>
-        <h3>Hello ${user.displayName}! You are currently signed in</h3> 
-        <p>Your User ID is ${user.uid}</p><br><p>${user.email ? user.email : ''}</p><br>
-        <p> ${user.phoneNumber ? user.phoneNumber : ''}</p>
+        <h3 class="title">Hello ${user.displayName}! </h3> 
+        <p>You are currently signed in</p>
+        <p class="code">${user.email ? user.email : ''}</p><br>
         `;
 
 
@@ -87,10 +87,28 @@ auth.onAuthStateChanged(user => {
                 if (doc.data().uid == user.uid) {
 
                     listItemToPush = `
-                        <div class="box" style="width: 75%">
-                                    <li style="list-style: none;" id="${doc.id}">Latitude: ${doc.data().coords[0]}, Longitude: ${doc.data().coords[1]}</li>
-                                    <strong>${doc.data().addressName.toLocaleString()}</strong> <br>
-                        </div>
+                    <div class="card" style="width: 75%; border-radius: 10px">
+  <header class="card-header">
+    <p class="card-header-title">
+      ${doc.data().addressName.toLocaleString()}
+    </p>
+    <button class="card-header-icon" aria-label="more options">
+      <span class="icon">
+        <i class="fas fa-angle-down" aria-hidden="true"></i>
+      </span>
+    </button>
+  </header>
+  <div class="card-content">
+    <div class="content">
+        <li style="list-style: none;" id="${doc.id}"><b>Latitude: </b>${doc.data().coords[0]}, <b>Longitude: </b>${doc.data().coords[1]}</li>
+    </div>
+  </div>
+  <footer class="card-footer">
+    <a href="#" class="card-footer-item">Share</a>
+    <a href="#" class="card-footer-item">Edit</a>
+    <a href="#" class="card-footer-item has-background-danger has-text-primary-light">Delete</a>
+  </footer>
+</div><br><br>
                         `
 
                     items.push(listItemToPush)
@@ -115,7 +133,7 @@ auth.onAuthStateChanged(user => {
     
         <p class="subtitle is-6">Sign in with your Google Account below to list your own cat for adoption!</p>
         <a href="./privacy.html">Privacy Policy</a><br>
-        <button id="signInButton" class="button">Sign In with Google</button><br><br>
+        <button id="signInButton" class="button is-success">Sign In with Google</button><br><br>
 
     </div>
 
@@ -137,5 +155,13 @@ div {
     align-content: center;
     flex-wrap: wrap;
     flex-direction: column;
+}
+
+#userDetails {
+    background-color: #85CEFF;
+}
+
+#coordsList {
+    padding: 2em
 }
 </style>

@@ -4,7 +4,12 @@ import PageHero from './components/PageHero.vue'
 import AuthenticationSection from './components/AuthenticationSection.vue';
 import MapView from './components/MapView.vue'
 import PetListing from './components/PetListing.vue'
+import Footer from './components/Footer.vue'
 
+
+if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js');
+    }
 </script>
 
 <template>
@@ -29,17 +34,7 @@ import PetListing from './components/PetListing.vue'
 
   <PetListing />
 
-  <article class="message is-warning">
-    <div class="message-header">
-      <p>Reminder</p>
-      <button class="delete" aria-label="delete"></button>
-    </div>
-    <div class="message-body">
-      Paws2Help is still in Alpha Development, bugs and errors may appear. Feel free to report them by sending an email <a
-        href="mailto:maguswyvern@gmail.com">here!</a>
-    </div>
-  </article>
-
+  <Footer />
 </template>
 
 <style scoped>

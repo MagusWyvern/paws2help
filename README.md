@@ -17,6 +17,9 @@ This web app aims to help the community aware of how many stray animals are in t
 
 - [x] File Structure
 - [x] Vue.js Framework Integration
+- [x] Manifest.json file
+- [x] Service Worker
+- [x] Apple / iOS Icons
 
 ## Build Pipeline
 

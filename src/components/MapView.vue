@@ -6,7 +6,7 @@ import { ref, onMounted } from 'vue';
 import { initializeApp } from "firebase/app";
 import { getFirestore, query, collection, onSnapshot, doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getCurrentUser } from '../authenticateUser'
-import { catIcon } from './icons/LeafletIcon'
+import { donatingCatIcon, receivingCatIcon } from './icons/LeafletIcon'
 import { addPetCoords } from '../addPetCoords'
 
 const firebaseConfig = {
@@ -111,7 +111,15 @@ onMounted(() => {
                 creatorPhone = doc.data().creatorPhone
             }
 
-            let newMarker = new L.marker([doc.data().coords[0], doc.data().coords[1]], { icon: catIcon }).bindPopup(`${doc.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${doc.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
+            let chosenIcon
+
+            if (doc.data().donate) {
+                chosenIcon = donatingCatIcon
+            } else {
+                chosenIcon = receivingCatIcon
+            }
+
+            let newMarker = new L.marker([doc.data().coords[0], doc.data().coords[1]], { icon: chosenIcon }).bindPopup(`${doc.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${doc.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
 
             if (markers.includes(newMarker) == false) {
                 markers.push(newMarker);
