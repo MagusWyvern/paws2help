@@ -162,7 +162,7 @@ onMounted(() => {
     let createThing = document.getElementById('createThing')
 
     createThing.onclick = () => {
-
+        
         addPetCoords(mymap.getCenter().lat, mymap.getCenter().lng, getCurrentUser().uid);
 
     }

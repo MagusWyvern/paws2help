@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, query, collection, onSnapshot, where } from "firebase/firestore";
-import { getCurrentUser, setupHTMLHandlers } from '../authenticateUser'
+import { setCurrentUser, getCurrentUser, setupHTMLHandlers } from '../authenticateUser'
 
 const firebaseConfig = {
     apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
@@ -37,6 +37,8 @@ auth.onAuthStateChanged(user => {
     if (user) {
         console.info("Successfully logged in with UID: " + user.uid)
 
+        setCurrentUser(user)
+
         // Hide the sign in buttion when a user is logged in
         signInButton.style.visibility = "hidden";
         signInButton.style.display = "none";
@@ -64,9 +66,11 @@ auth.onAuthStateChanged(user => {
     // Query all the markers where the current user made it
     const personalMarkersQuery = query(collection(db, "pet-coords"));
 
-    items = []
-
+    
     const unsubscribe = onSnapshot(personalMarkersQuery, (querySnapshot) => {
+        
+        // Empty the list every time a new snapshot is received
+        items = []
 
         querySnapshot.forEach((doc) => {
 
@@ -82,11 +86,8 @@ auth.onAuthStateChanged(user => {
 
                     listItemToPush = `
                         <div class="box" style="width: 75%">
-    
                                     <li style="list-style: none;" id="${doc.id}">Latitude: ${doc.data().coords[0]}, Longitude: ${doc.data().coords[1]}</li>
                                     <strong>${doc.data().addressName.toLocaleString()}</strong> <br>
-    
-                                    <button data-docid="${doc.id}" id="deleteBtn" class="button" onclick="deleteDocbyID(this)">Delete</button>
                         </div>
                         `
 

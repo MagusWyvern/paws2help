@@ -44,6 +44,10 @@ export function setupHTMLHandlers() {
     });
 }
 
+export function setCurrentUser(passedUser) {
+    user = passedUser
+}
+
 export function getCurrentUser() {
     if (user) {
         return user
