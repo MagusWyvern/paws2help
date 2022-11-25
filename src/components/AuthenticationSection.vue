@@ -5,8 +5,7 @@ import { getAuth, onAuthStateChanged, signInWithRedirect, getRedirectResult, Goo
 import { getFirestore, query, collection, onSnapshot, where } from "firebase/firestore";
 import { getCurrentUser, setupHTMLHandlers } from '../authenticateUser'
 
-let items
-var firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
     authDomain: "petscircle.firebaseapp.com",
     projectId: "petscircle",
@@ -16,24 +15,15 @@ var firebaseConfig = {
     measurementId: "G-3PVKXCEFW3"
 };
 
-const firebaseApp = initializeApp({
-    apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
-    authDomain: "petscircle.firebaseapp.com",
-    projectId: "petscircle",
-    storageBucket: "petscircle.appspot.com",
-    messagingSenderId: "195232543538",
-    appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
-    measurementId: "G-3PVKXCEFW3"
-});
-
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const firebaseApp = initializeApp(firebaseConfig);
 
 // Initialize Cloud Firestore and get a reference to the service
-const db = getFirestore(app);
-
+const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
 const provider = new GoogleAuthProvider();
+
+let items
 
 onMounted(() => {
     const signInButton = document.getElementById('signInButton');
@@ -43,14 +33,11 @@ onMounted(() => {
     setupHTMLHandlers()
 })
 
-const whenSignedIn = document.getElementById('whenSignedIn');
-const whenSignedOut = document.getElementById('whenSignedOut');
-
 auth.onAuthStateChanged(user => {
     if (user) {
-        console.info("Logged in!")
-        // This is what is shown to the user when it's signed in
+        console.info("Successfully logged in with UID: " + user.uid)
 
+        // Hide the sign in buttion when a user is logged in
         signInButton.style.visibility = "hidden";
         signInButton.style.display = "none";
 
@@ -64,14 +51,14 @@ auth.onAuthStateChanged(user => {
 
 
     } else {
-        console.info("Logged out!")
+        console.info("User is not currently logged in.")
 
+        // Hide the sign out button and empty the user details section
         signOutButton.style.display = "none"
         userDetails.innerHTML = '';
 
-        // Unsubscribe when the user signs out
+        // Unsubscribe from Firestore queries when the user signs out
         // personalMarkerSubscribe && publicMarkerSubscribe && unsubscribe();
-
     }
 
     // Query all the markers where the current user made it
@@ -80,20 +67,19 @@ auth.onAuthStateChanged(user => {
     items = []
 
     const unsubscribe = onSnapshot(personalMarkersQuery, (querySnapshot) => {
-        const cities = [];
 
         querySnapshot.forEach((doc) => {
 
-            console.log(JSON.stringify(doc.data()))
+            // Logging: Log every fetched document from Firestore collection 'pet-coords'
+            // console.log(JSON.stringify(doc.data()))
 
             let user = getCurrentUser()
-            console.info("The current user (MapView.vue)" + user)
             let listItemToPush
 
             if (user) {
 
                 if (doc.data().uid == user.uid) {
-    
+
                     listItemToPush = `
                         <div class="box" style="width: 75%">
     
@@ -103,12 +89,13 @@ auth.onAuthStateChanged(user => {
                                     <button data-docid="${doc.id}" id="deleteBtn" class="button" onclick="deleteDocbyID(this)">Delete</button>
                         </div>
                         `
-                    
+
                     items.push(listItemToPush)
-                    
-                    console.log("Current items array: " + items)
-    
-                    } else {
+
+                    // Logging: Logs the current state of the `items` array
+                    // console.log("Current items array: " + items)
+
+                } else {
                 }
             }
         });
@@ -121,15 +108,11 @@ auth.onAuthStateChanged(user => {
 
 <template>
 
-
-
     <div>
         <button id="signInButton" class="button">Sign In with Google</button><br><br>
     </div>
 
     <div class="box" id="userDetails"></div>
-
-
 
     <div id="coordsList"></div>
 

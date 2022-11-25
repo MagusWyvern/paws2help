@@ -1,13 +1,4 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { FieldValue, serverTimestamp } from 'firebase/firestore'
-
-
-onMounted(() => {
-    
-
-})
-
 
 </script>
 
@@ -43,7 +34,3 @@ onMounted(() => {
 
     </div>
 </template>
-
-<style>
-
-</style>

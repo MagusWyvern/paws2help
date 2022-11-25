@@ -9,28 +9,7 @@ import { getCurrentUser } from '../authenticateUser'
 import { catIcon } from './icons/LeafletIcon'
 import { addPetCoords } from '../addPetCoords'
 
-// dec2hex :: Integer -> String
-// i.e. 0-255 -> '00'-'ff'
-function dec2hex (dec) {
-  return dec.toString(16).padStart(2, "0")
-}
-
-// generateId :: Integer -> String
-function generateId (len) {
-  var arr = new Uint8Array((len || 40) / 2)
-  window.crypto.getRandomValues(arr)
-  return Array.from(arr, dec2hex).join('')
-}
-
-let mymap
-let petImage
-let creatorPhone
-let creatorName
-
-var markerClusters = L.markerClusterGroup()
-var markers = new Array();
-
-var firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
     authDomain: "petscircle.firebaseapp.com",
     projectId: "petscircle",
@@ -40,21 +19,18 @@ var firebaseConfig = {
     measurementId: "G-3PVKXCEFW3"
 };
 
-const firebaseApp = initializeApp({
-    apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
-    authDomain: "petscircle.firebaseapp.com",
-    projectId: "petscircle",
-    storageBucket: "petscircle.appspot.com",
-    messagingSenderId: "195232543538",
-    appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
-    measurementId: "G-3PVKXCEFW3"
-});
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const firebaseApp = initializeApp(firebaseConfig);
 
 // Initialize Cloud Firestore and get a reference to the service
-const db = getFirestore(app);
+const db = getFirestore(firebaseApp);
+
+let mymap
+let petImage
+let creatorPhone
+let creatorName
+
+var markerClusters = L.markerClusterGroup()
+var markers = new Array();
 
 let userlatitude = 0;
 let userlongitude = 0;
@@ -82,11 +58,8 @@ function onMapClick(e) {
         .openOn(mymap);
 }
 
-
 function initializeMap() {
     mymap = L.map('main_map').setView([4.225128, 102.249195], 8);
-
-    console.log("here" + mymap)
 
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -106,10 +79,8 @@ onMounted(() => {
     initializeMap()
 
     let user = getCurrentUser()
-    console.info("The current user (MapView.vue)" + user)
 
     // Query the data from Firestore, then plot it on the map with Leaflet icons
-
     const markersQuery = query(collection(db, "pet-coords"));
 
     const unsubscribe = onSnapshot(markersQuery, (querySnapshot) => {
@@ -117,7 +88,8 @@ onMounted(() => {
 
         querySnapshot.forEach((doc) => {
 
-            console.log(JSON.stringify(doc.data()))
+            // Logging: Log every document fetched in their raw object form
+            // console.log(JSON.stringify(doc.data()))
 
             cities.push(doc.data().addressName)
 
@@ -153,8 +125,9 @@ onMounted(() => {
             mymap.addLayer(markers[i])
         }
 
-        console.info('Current markers array length: ' + markers.length)
-        console.log("Loaded address names: ", cities.join(", "));
+        // Loggging
+        // console.info('Current markers array length: ' + markers.length)
+        // console.log("Loaded address names: ", cities.join(", "));
 
     });
 

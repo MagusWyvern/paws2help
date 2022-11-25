@@ -2,12 +2,11 @@
 import AppIcon from './icons/IconApp.vue'
 
 defineProps({
-  msg: {
-    type: String,
-    required: true
-  }
+    msg: {
+        type: String,
+        required: true
+    }
 })
-
 
 </script>
 
@@ -17,18 +16,17 @@ defineProps({
             <div class="wrapper">
                 <AppIcon />
                 <p class="title">
-                        {{ msg }}
+                    {{ msg }}
                 </p>
             </div>
             <p class="subtitle">Helping the community to care for cats around the country &#60;3 </p>
         </div>
     </section>
 
-    
+
 </template>
 
 <style scoped>
-
 .wrapper {
     display: flex;
     align-items: center;
@@ -38,5 +36,4 @@ defineProps({
     border-radius: 10px;
     width: 100%;
 }
-
 </style>
