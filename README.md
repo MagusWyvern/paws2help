@@ -1,5 +1,7 @@
 ## Paws2Help: A Fundamental Endeavour to Support Stray Animals
 
+> NOTE: As of 29th December 2022, this project has been put on hiatus. Development may continue in the future.
+
 It is a common sight to see many stray animals roaming around the city, looking for food, water, or even shelter. Most of them have often been overlooked, given only at most a simple pat from strangers. Since they may be infected with dangerous diseases and a wide range of the animals do not have a pleasant appearance, society chose to move further away from them causing them to continue to be neglected. 
 
 This web app aims to help the community aware of how many stray animals are in their vicinity. Along with features to list unwanted animals or pets for people that are looking to be pet owners.

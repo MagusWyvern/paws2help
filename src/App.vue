@@ -8,8 +8,8 @@ import Footer from './components/Footer.vue'
 
 
 if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js');
-    }
+  navigator.serviceWorker.register('/service-worker.js');
+}
 
 
 </script>
@@ -18,6 +18,13 @@ if ('serviceWorker' in navigator) {
   <header>
     <PageHero msg="Paws2Help" />
   </header>
+
+  <div class="block"></div>
+
+  <div class="notification is-warning">
+    <!-- <button class="delete"></button> -->
+As of 29th December 2022, this project has been put on hiatus. Be aware that there may be delays in processing your help requests.
+  </div>
 
   <div class="block"></div>
 
