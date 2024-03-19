@@ -25,7 +25,7 @@ This web app aims to help the community aware of how many stray animals are in t
 
 ## Build Pipeline
 
-Netlify automatically builds the web app from each new commit to the main branch, but Firebase builds will need to be built and deploy manually using their CLI
+Netlify automatically builds the web app from each new commit to the main branch
 
 ## Recommended IDE Setup
 
