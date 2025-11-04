@@ -1,6 +1,6 @@
-# .
+# Paws2Help
 
-This template should help get you started developing with Vue 3 in Vite.
+Project created with `npm create vue@latest`
 
 ## Recommended IDE Setup
 
