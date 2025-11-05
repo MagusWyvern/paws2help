@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted } from 'vue'
+import Navbar from './components/Navbar.vue'
 
 onMounted(() => {
   const map = L.map('map').setView([3.139, 101.686], 8)
@@ -11,34 +12,55 @@ onMounted(() => {
 </script>
 
 <template>
-  <nav>
-    <li>Home</li>
-    <li>About us</li>
-    <li>Contact</li>
-    <li>Statistics</li>
-    <li>Login</li>
-  </nav>
 
-  <h1>Paws2Help</h1>
+  <Navbar />
 
-  <p>Paws2Help is a simple web app that allows you to:</p>
-  <ul>
-    <li>Report the location of stray cats</li>
-    <li>List your pets up for adoption</li>
-    <li>Adopt pets from existing owners</li>
-  </ul>
+  <section class="hero">
+    <div class="hero-body">
+      <p class="title">Paws2Help</p>
+      <p class="subtitle">Hero subtitle</p>
+    </div>
+  </section>
 
+  <section class="box">
+    <p>Paws2Help is a simple web app that allows you to:</p>
+
+    <section class="columns">
+
+      <section class="column">Report the location of stray cats</section>
+      <section class="column">List your pets up for adoption</section>
+      <section class="column">Adopt pets from existing owners</section>
+    </section>
+
+  </section>
 
   <div id="map"></div>
 
-  <p>Stray animals spotted</p>
-  <p>Animals listed for adoption</p>
-  <p>Animals with new homes</p>
+  <section class="columns">
+    <section class="column">
+      <section class="box">
+        <p>Stray animals spotted</p>
+      </section>
+    </section>
+    <section class="column">
+      <section class="box">
+        <p>Animals listed for adoption</p>
+      </section>
+    </section>
+    <section class="column">
+      <section class="box">
+        <p>Animals with new homes</p>
+      </section>
+    </section>
+  </section>
+
+
+
 
 
   <p>See an act of Animal Cruelty?</p>
 
-  <button>Report to Department of Veterinarian Service Malaysia</button>
+  <a href="" class="button">Report to Veterinarian Department of Malaysia</a>
 </template>
 
 <style scoped>
