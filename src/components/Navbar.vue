@@ -1,4 +1,6 @@
 <script setup>
+import { RouterLink } from 'vue-router';
+
 
 </script>
 
@@ -28,11 +30,15 @@
         <div id="navbarBasicExample" class="navbar-menu">
             <div class="navbar-start">
                 <a class="navbar-item">
-                    Home
+                    <RouterLink to="/">
+                        Home
+                    </RouterLink>
                 </a>
 
                 <a class="navbar-item">
-                    About us
+                    <RouterLink to="/about">
+                        About us
+                    </RouterLink>
                 </a>
 
                 <div class="navbar-item has-dropdown is-hoverable">
@@ -42,17 +48,25 @@
 
                     <div class="navbar-dropdown">
                         <a class="navbar-item">
-                            Contact us
+                            <RouterLink to="/contact-us">
+                                Contact us
+                            </RouterLink>
                         </a>
                         <a class="navbar-item is-selected">
-                            Data & Statistics
+                            <RouterLink to="/data">
+                                Data & Statistics
+                            </RouterLink>
                         </a>
                         <a class="navbar-item">
-                            Documentation
+                            <RouterLink to="/docs">
+                                Documentation
+                            </RouterLink>
                         </a>
                         <hr class="navbar-divider">
                         <a class="navbar-item">
-                            Report an issue
+                            <RouterLink to="/issue">
+                                Report an issue
+                            </RouterLink>
                         </a>
                     </div>
                 </div>
@@ -62,10 +76,14 @@
                 <div class="navbar-item">
                     <div class="buttons">
                         <a class="button is-primary">
-                            <strong>Sign up</strong>
+                            <RouterLink to="/auth">
+                                <strong>Sign up</strong>
+                            </RouterLink>
                         </a>
                         <a class="button is-light">
-                            Log in
+                            <RouterLink to="/auth">
+                                Log in
+                            </RouterLink>
                         </a>
                     </div>
                 </div>
