@@ -43,4 +43,3 @@ npm run build
 npm run test:unit
 ```
 
-> As of now, no unit tests have been written yet!
