@@ -61,8 +61,7 @@ function onMapClick(e) {
 function initializeMap() {
     mymap = L.map('main_map').setView([4.225128, 102.249195], 8);
 
-    const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN ||
-        'pk.eyJ1IjoibWFndXN3eXZlcm4iLCJhIjoiY2tzNGFweDNrMDFpMzJwbWxpZmlmMHhmciJ9.Itc6X_zrrrRfUj7GwwXP8w';
+    const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
     const openStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
