@@ -144,13 +144,13 @@ auth.onAuthStateChanged(user => {
     <div id="signInNow">
         <h1 class="title is-4">Ready to get started?</h1>
 
-        <p class="subtitle is-6">Sign in with your Google Account below to list your own cat for adoption!</p>
-        <a href="./privacy.html">Privacy Policy</a><br>
-        <button id="signInButton" class="button is-success">Sign In with Google</button><br><br>
+        <p class="subtitle is-6">Pet listing is only available for logged-in users.</p>
 
+        <button id="signInButton" class="button is-success">Sign In with Google</button><br><br>
     </div>
 
     <div class="box" id="userDetails"></div><br><br>
+    
     <center>
 
         <section id="coordsContainer">
