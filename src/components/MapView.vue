@@ -61,31 +61,10 @@ function onMapClick(e) {
 function initializeMap() {
     mymap = L.map('main_map').setView([4.225128, 102.249195], 8);
 
-    const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-
-    const openStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19,
-    });
-
-    const mapboxLayer = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        maxZoom: 18,
-        id: 'mapbox/streets-v11',
-        tileSize: 512,
-        zoomOffset: -1,
-        accessToken: mapboxToken,
-    });
-
-    mapboxLayer.once('tileerror', () => {
-        console.warn('Mapbox tiles failed to load; switching to OpenStreetMap.');
-        if (mymap.hasLayer(mapboxLayer)) {
-            mymap.removeLayer(mapboxLayer);
-        }
-        openStreetMapLayer.addTo(mymap);
-    });
-
-    mapboxLayer.addTo(mymap);
+    }).addTo(mymap);
 
     // Register the function so that it activates when the user clicks on the map
     mymap.on('click', onMapClick);
