@@ -3,26 +3,11 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 import { onMounted } from 'vue';
-import { initializeApp } from "firebase/app";
-import { getFirestore, query, collection, onSnapshot } from "firebase/firestore";
+import { query, collection, onSnapshot } from "firebase/firestore";
+import { db } from '../firebase';
 import { getCurrentUser } from '../authenticateUser';
 import { donatingCatIcon, receivingCatIcon } from './icons/LeafletIcon'
 import { addPetCoords } from '../addPetCoords'
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
-    authDomain: "petscircle.firebaseapp.com",
-    projectId: "petscircle",
-    storageBucket: "petscircle.appspot.com",
-    messagingSenderId: "195232543538",
-    appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
-    measurementId: "G-3PVKXCEFW3"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-
-// Initialize Cloud Firestore and get a reference to the service
-const db = getFirestore(firebaseApp);
 
 let mymap
 let petImage

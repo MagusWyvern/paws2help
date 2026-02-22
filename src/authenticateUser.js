@@ -1,19 +1,5 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
-    authDomain: "petscircle.firebaseapp.com",
-    projectId: "petscircle",
-    storageBucket: "petscircle.appspot.com",
-    messagingSenderId: "195232543538",
-    appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
-    measurementId: "G-3PVKXCEFW3"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
-const provider = new GoogleAuthProvider();
+import { getRedirectResult, GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { auth, provider } from './firebase';
 
 let user
 

@@ -1,27 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, query, collection, onSnapshot, where } from "firebase/firestore";
+import { onMounted } from 'vue';
+import { query, collection, onSnapshot } from "firebase/firestore";
+import { auth, db } from '../firebase';
 import { setCurrentUser, getCurrentUser, setupHTMLHandlers } from '../authenticateUser'
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
-    authDomain: "petscircle.firebaseapp.com",
-    projectId: "petscircle",
-    storageBucket: "petscircle.appspot.com",
-    messagingSenderId: "195232543538",
-    appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
-    measurementId: "G-3PVKXCEFW3"
-};
-
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig);
-
-// Initialize Cloud Firestore and get a reference to the service
-const db = getFirestore(firebaseApp);
-const auth = getAuth(firebaseApp);
-const provider = new GoogleAuthProvider();
 
 let items
 

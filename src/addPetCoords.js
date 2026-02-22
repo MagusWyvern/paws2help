@@ -1,20 +1,5 @@
-import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { initializeApp } from "firebase/app";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCxuDGiS-uw2G3Y6keIW85G8v25IeRTaBs",
-    authDomain: "petscircle.firebaseapp.com",
-    projectId: "petscircle",
-    storageBucket: "petscircle.appspot.com",
-    messagingSenderId: "195232543538",
-    appId: "1:195232543538:web:f5fbb5300ffd876b325d2b",
-    measurementId: "G-3PVKXCEFW3"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-
-// Initialize Cloud Firestore and get a reference to the service
-const db = getFirestore(firebaseApp);
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "./firebase";
 
 // Unique Document UID Generator
 // dec2hex :: Integer -> String
