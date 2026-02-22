@@ -21,13 +21,6 @@ if ('serviceWorker' in navigator) {
 
   <div class="block"></div>
 
-  <div class="notification is-warning">
-    <!-- <button class="delete"></button> -->
-As of 29th December 2022, this project has been put on hiatus. Be aware that there may be delays in processing your help requests.
-  </div>
-
-  <div class="block"></div>
-
   <div class="box">
     <h1 class="title is-4">What is this app for?</h1>
 

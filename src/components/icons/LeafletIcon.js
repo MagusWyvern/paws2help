@@ -1,3 +1,5 @@
+import L from 'leaflet'
+
 export var dogIcon = L.icon({
     iconUrl: '/map-icons/dog-solid.svg',
     shadowUrl: '/map-icons/shadow.svg',
