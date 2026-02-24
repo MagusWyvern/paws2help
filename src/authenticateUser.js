@@ -1,43 +1,36 @@
-import { getRedirectResult, GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
-import { auth, provider } from './firebase';
+import { getRedirectResult, signInWithRedirect, signOut } from 'firebase/auth'
+import { auth, provider } from './firebase'
 
-let user
+let user = null
 
-export function setupHTMLHandlers() {
-    signInButton.onclick = () => signInWithRedirect(auth, provider);
-    signOutButton.onclick = () => auth.signOut() && location.reload()
+export function setupHTMLHandlers({ signInButton, signOutButton }) {
+    if (signInButton) {
+        signInButton.onclick = () => signInWithRedirect(auth, provider)
+    }
 
-    getRedirectResult(auth)
-    .then((result) => {
+    if (signOutButton) {
+        signOutButton.onclick = async () => {
+            await signOut(auth)
+        }
+    }
 
-        // This gives you a Google Access Token. You can use it to access Google APIs.
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const token = credential.accessToken;
-
-        // The signed-in user info.
-        user = result.user;
-
-    }).catch((error) => {
-        // Handle Errors here.
-        const errorCode = error.code;
-        const errorMessage = error.message;
-
-        // The email of the user's account used.
-        // const email = error.customData.email;
-
-        // The AuthCredential type that was used.
-        const credential = GoogleAuthProvider.credentialFromError(error);
-    });
+    return getRedirectResult(auth)
+        .then((result) => {
+            if (result && result.user) {
+                user = result.user
+            }
+            return result
+        })
+        .catch((error) => {
+            console.error('Sign-in redirect processing failed:', error)
+            return null
+        })
 }
 
 export function setCurrentUser(passedUser) {
-    user = passedUser
+    user = passedUser || null
 }
 
 export function getCurrentUser() {
-    if (user) {
-        return user
-    } else {
-        console.warn("User hasn't logged in yet!")
-    }
+    return user
 }
