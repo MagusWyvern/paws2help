@@ -128,11 +128,11 @@ onBeforeUnmount(() => {
         <button id="signInButton" class="button is-success">Sign In with Google</button><br><br>
     </div>
 
-    <div class="box" id="userDetails"></div><br><br>
+    <div class="box" id="userDetails" style="display: none;"></div><br><br>
     
     <center>
 
-        <section id="coordsContainer">
+        <section id="coordsContainer" style="display: none;">
             <h1 class="title is-4">Registered Coordinates</h1>
             <p class="subtitle is-6">This is the list of location(s) that you have registered using this account before:</p>
             <div id="coordsList">
@@ -141,7 +141,7 @@ onBeforeUnmount(() => {
     </center>
 
     <div>
-        <button id="signOutButton" class="button is-danger">Sign Out</button>
+        <button id="signOutButton" class="button is-danger" style="display: none;">Sign Out</button>
     </div>
 
 </template>
