@@ -1,11 +1,22 @@
 <script setup>
-import { setCurrentUser, getCurrentUser, setupHTMLHandlers } from '../authenticateUser'
-import { onMounted } from 'vue'
+import { setCurrentUser, getCurrentUser } from '../authenticateUser'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { auth } from '../firebase'
+
+const isLoggedIn = ref(Boolean(getCurrentUser()))
+let authUnsubscribe = null
 
 onMounted(() => {
-    let user = getCurrentUser()
+    authUnsubscribe = auth.onAuthStateChanged((user) => {
+        setCurrentUser(user || null)
+        isLoggedIn.value = Boolean(user)
+    })
+})
 
-    const listingFormButton = document.getElementById("js-modal-trigger")
+onBeforeUnmount(() => {
+    if (authUnsubscribe) {
+        authUnsubscribe()
+    }
 })
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -90,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <center>
-        <button class="button is-link" id="js-modal-trigger" data-target="listing-form-modal">
+        <button v-if="isLoggedIn" class="button is-link" id="js-modal-trigger" data-target="listing-form-modal">
             Add A Listing
         </button><br><br>
 
