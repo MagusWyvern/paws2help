@@ -1,6 +1,7 @@
 <script setup>
 import AppIcon from './icons/IconApp.vue'
 import { onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 
 defineProps({
     msg: {
@@ -50,9 +51,9 @@ onMounted(() => {
         <div class="container">
             <div id="navMenu" class="navbar-menu">
                 <div class="navbar-start">
-                    <a class="navbar-item">
-                        Home
-                    </a>
+                    <RouterLink to="/" class="navbar-item">Home</RouterLink>
+                    <RouterLink to="/auth" class="navbar-item">Account</RouterLink>
+                    <RouterLink to="/map" class="navbar-item">Map</RouterLink>
                 </div>
 
                 <div class="navbar-end">
