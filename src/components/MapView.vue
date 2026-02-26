@@ -2,7 +2,7 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import 'leaflet.markercluster/dist/leaflet.markercluster.js';
-import { onMounted } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { query, collection, onSnapshot } from "firebase/firestore";
 import { db } from '../firebase';
 import { getCurrentUser } from '../authenticateUser';
@@ -35,6 +35,9 @@ let options = {
 };
 
 var popup = L.popup();
+const mapInteractionEnabled = ref(false);
+let markersUnsubscribe = null;
+const interactionKeyLabel = ref('Ctrl');
 
 function onMapClick(e) {
     popup
@@ -44,7 +47,9 @@ function onMapClick(e) {
 }
 
 function initializeMap() {
-    mymap = L.map('main_map').setView([4.225128, 102.249195], 8);
+    mymap = L.map('main_map', {
+        zoomControl: true,
+    }).setView([4.225128, 102.249195], 8);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
@@ -55,14 +60,28 @@ function initializeMap() {
     mymap.on('click', onMapClick);
 }
 
+function updateInteractionModifierState(event) {
+    mapInteractionEnabled.value = event.ctrlKey || event.metaKey;
+}
+
+function resetInteractionModifierState() {
+    mapInteractionEnabled.value = false;
+}
+
 onMounted(() => {
+    if (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)) {
+        interactionKeyLabel.value = 'Cmd';
+    }
 
     initializeMap()
+    window.addEventListener('keydown', updateInteractionModifierState);
+    window.addEventListener('keyup', updateInteractionModifierState);
+    window.addEventListener('blur', resetInteractionModifierState);
 
     // Query the data from Firestore, then plot it on the map with Leaflet icons
     const markersQuery = query(collection(db, "pet-coords"));
 
-    const unsubscribe = onSnapshot(markersQuery, (querySnapshot) => {
+    markersUnsubscribe = onSnapshot(markersQuery, (querySnapshot) => {
         const cities = [];
 
         querySnapshot.forEach((doc) => {
@@ -120,38 +139,95 @@ onMounted(() => {
 
     let createThing = document.getElementById('createThing')
 
-    createThing.onclick = () => {
-        const currentUser = getCurrentUser()
+    if (createThing) {
+        createThing.onclick = () => {
+            const currentUser = getCurrentUser()
 
-        if (!currentUser) {
-            console.warn('Cannot create listing because no authenticated user is available.')
-            return
+            if (!currentUser) {
+                console.warn('Cannot create listing because no authenticated user is available.')
+                return
+            }
+
+            addPetCoords(mymap.getCenter().lat, mymap.getCenter().lng, currentUser.uid);
+
         }
-
-        addPetCoords(mymap.getCenter().lat, mymap.getCenter().lng, currentUser.uid);
-
     }
 
 
 })
 
+onBeforeUnmount(() => {
+    window.removeEventListener('keydown', updateInteractionModifierState);
+    window.removeEventListener('keyup', updateInteractionModifierState);
+    window.removeEventListener('blur', resetInteractionModifierState);
+
+    if (markersUnsubscribe) {
+        markersUnsubscribe()
+    }
+})
 
 </script>
 
 <template>
-
-    <div id="main_map">
-
+    <div class="map-shell">
+        <p class="map-lock-hint">
+            Hold {{ interactionKeyLabel }} to interact with the map.
+        </p>
+        <div class="map-frame" :class="{ 'is-locked': !mapInteractionEnabled }">
+            <div id="main_map"></div>
+            <div
+                v-if="!mapInteractionEnabled"
+                class="map-lock-overlay"
+                @wheel.prevent.stop
+                @mousedown.prevent.stop
+                @dblclick.prevent.stop
+                @touchstart.prevent.stop
+                @pointerdown.prevent.stop
+                @click.prevent.stop
+            />
+        </div>
     </div>
-
 </template>
 
 <style scoped>
+.map-shell {
+    position: relative;
+}
+
+.map-lock-hint {
+    position: absolute;
+    top: 1.5vh;
+    left: 7vh;
+    z-index: 1000;
+    margin: 0;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.72);
+    color: #ffffff;
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.map-frame {
+    position: relative;
+    margin: 5vh;
+}
+
 #main_map {
     height: 75vh;
     padding-bottom: 10vh;
     z-index: 0;
-    margin: 5vh;
+}
+
+.map-lock-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 900;
+    background: transparent;
+}
+
+.map-frame.is-locked :deep(.leaflet-control-zoom) {
+    display: none;
 }
 
 .leaflet-cluster-anim .leaflet-marker-icon,
