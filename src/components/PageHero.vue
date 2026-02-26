@@ -1,7 +1,12 @@
 <script setup>
 import AppIcon from './icons/IconApp.vue'
-import { onMounted } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { auth } from '../firebase'
+import { setCurrentUser } from '../authenticateUser'
+
+const currentUser = ref(null)
+let authUnsubscribe = null
 
 defineProps({
     msg: {
@@ -11,6 +16,10 @@ defineProps({
 })
 
 onMounted(() => {
+    authUnsubscribe = auth.onAuthStateChanged((user) => {
+        setCurrentUser(user || null)
+        currentUser.value = user || null
+    })
 
     let deferredPrompt;
     const addBtn = document.querySelector('#add-button');
@@ -23,6 +32,10 @@ onMounted(() => {
         // Stash the event so it can be triggered later.
         deferredPrompt = e;
         // Update UI to notify the user they can add to home screen
+        if (!addBtn) {
+            return
+        }
+
         addBtn.style.display = 'block';
 
         addBtn.addEventListener('click', (e) => {
@@ -41,6 +54,12 @@ onMounted(() => {
         });
     });
 
+})
+
+onBeforeUnmount(() => {
+    if (authUnsubscribe) {
+        authUnsubscribe()
+    }
 })
 
 </script>
@@ -63,6 +82,15 @@ onMounted(() => {
                 <div class="navbar-end">
                     <div class="navbar-item">
                         <div class="buttons">
+                            <RouterLink to="/auth" class="button is-light auth-button">
+                                <img
+                                    v-if="currentUser?.photoURL"
+                                    :src="currentUser.photoURL"
+                                    alt="User profile picture"
+                                    class="user-avatar"
+                                >
+                                <span>{{ currentUser ? 'Account' : 'Sign In' }}</span>
+                            </RouterLink>
                             <a id="add-button" class="button is-link">Download App</a>
                         </div>
                     </div>
@@ -122,8 +150,43 @@ onMounted(() => {
     color: #ffffff;
 }
 
-.navbar-item:hover {
+.navbar-item:not(.site-brand).router-link-active,
+.navbar-item:not(.site-brand).router-link-exact-active {
     color: #ffffff;
     background-color: rgba(255, 255, 255, 0.15);
+}
+
+.auth-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.buttons .button:hover,
+.buttons .button:focus,
+.buttons .button:active {
+    transform: none;
+    box-shadow: none;
+}
+
+#add-button:hover,
+#add-button:focus,
+#add-button:active {
+    background-color: #485fc7;
+    border-color: transparent;
+}
+
+.auth-button:hover,
+.auth-button:focus,
+.auth-button:active {
+    background-color: #f5f5f5;
+    border-color: transparent;
+}
+
+.user-avatar {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    object-fit: cover;
 }
 </style>
