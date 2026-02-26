@@ -59,8 +59,6 @@ onMounted(() => {
 
     initializeMap()
 
-    let user = getCurrentUser()
-
     // Query the data from Firestore, then plot it on the map with Leaflet icons
     const markersQuery = query(collection(db, "pet-coords"));
 
@@ -123,8 +121,14 @@ onMounted(() => {
     let createThing = document.getElementById('createThing')
 
     createThing.onclick = () => {
-        
-        addPetCoords(mymap.getCenter().lat, mymap.getCenter().lng, getCurrentUser().uid);
+        const currentUser = getCurrentUser()
+
+        if (!currentUser) {
+            console.warn('Cannot create listing because no authenticated user is available.')
+            return
+        }
+
+        addPetCoords(mymap.getCenter().lat, mymap.getCenter().lng, currentUser.uid);
 
     }
 

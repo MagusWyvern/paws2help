@@ -1,11 +1,35 @@
-import { getRedirectResult, signInWithRedirect, signOut } from 'firebase/auth'
+import { getRedirectResult, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth'
 import { auth, provider } from './firebase'
 
-let user = null
+let user = auth.currentUser || null
+
+onAuthStateChanged(auth, (currentUser) => {
+    user = currentUser || null
+})
+
+async function startSignIn() {
+    try {
+        await signInWithPopup(auth, provider)
+    } catch (error) {
+        const shouldFallbackToRedirect = error?.code === 'auth/popup-blocked' ||
+            error?.code === 'auth/operation-not-supported-in-this-environment'
+
+        if (shouldFallbackToRedirect) {
+            await signInWithRedirect(auth, provider)
+            return
+        }
+
+        if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
+            return
+        }
+
+        console.error('Sign-in failed:', error)
+    }
+}
 
 export function setupHTMLHandlers({ signInButton, signOutButton }) {
     if (signInButton) {
-        signInButton.onclick = () => signInWithRedirect(auth, provider)
+        signInButton.onclick = () => startSignIn()
     }
 
     if (signOutButton) {
@@ -32,5 +56,5 @@ export function setCurrentUser(passedUser) {
 }
 
 export function getCurrentUser() {
-    return user
+    return auth.currentUser || user || null
 }
