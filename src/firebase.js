@@ -1,6 +1,6 @@
 import { getApp, getApps, initializeApp } from 'firebase/app'
-import { browserLocalPersistence, getAuth, GoogleAuthProvider, setPersistence } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { browserLocalPersistence, connectAuthEmulator, getAuth, GoogleAuthProvider, setPersistence } from 'firebase/auth'
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -35,3 +35,9 @@ export const provider = new GoogleAuthProvider()
 setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.warn('Failed to enable local auth persistence:', error)
 })
+
+if (import.meta.env.DEV && !globalThis.__PAWS2HELP_EMULATORS_CONNECTED__) {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true })
+  connectFirestoreEmulator(db, '127.0.0.1', 8080)
+  globalThis.__PAWS2HELP_EMULATORS_CONNECTED__ = true
+}
