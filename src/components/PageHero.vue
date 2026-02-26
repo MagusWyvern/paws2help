@@ -47,10 +47,14 @@ onMounted(() => {
 
 <template>
 
-    <nav class="navbar is-mobile">
-        <div class="container">
-            <div id="navMenu" class="navbar-menu">
+    <nav class="navbar is-mobile site-navbar">
+        <div class="navbar-shell">
+            <div id="navMenu" class="navbar-menu is-active">
                 <div class="navbar-start">
+                    <RouterLink to="/" class="navbar-item site-brand">
+                        <AppIcon class="brand-icon" />
+                        <span class="brand-name">{{ msg }}</span>
+                    </RouterLink>
                     <RouterLink to="/" class="navbar-item">Home</RouterLink>
                     <RouterLink to="/auth" class="navbar-item">Account</RouterLink>
                     <RouterLink to="/map" class="navbar-item">Map</RouterLink>
@@ -66,31 +70,60 @@ onMounted(() => {
             </div>
         </div>
     </nav>
-
-    <section class="hero is-primary">
-        <div class="hero-body">
-            <div class="wrapper">
-                <AppIcon />
-                <p class="title">
-                    {{ msg }}
-                </p>
-            </div>
-            <p class="subtitle">Helping the community to care for cats around the country &#60;3 </p>
-        </div>
-    </section>
-
-
 </template>
 
 <style scoped>
-.wrapper {
-    display: flex;
-    align-items: center;
-}
-
-.hero {
+.site-navbar {
     background-color: #3D3B8E;
     border-radius: 10px;
+}
+
+.navbar-shell {
     width: 100%;
+    padding: 0 0.5rem;
+}
+
+.navbar-menu.is-active {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.navbar-start {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-right: auto;
+}
+
+.navbar-end {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.site-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+
+.brand-icon {
+    width: 2rem;
+}
+
+.brand-name {
+    color: #ffffff;
+}
+
+.navbar-item {
+    color: #ffffff;
+}
+
+.navbar-item:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.15);
 }
 </style>
