@@ -58,3 +58,26 @@ export function setCurrentUser(passedUser) {
 export function getCurrentUser() {
     return auth.currentUser || user || null
 }
+
+export function resolveUserPhotoURL(passedUser) {
+    if (!passedUser) {
+        return null
+    }
+
+    const providerPhotoURLs = Array.isArray(passedUser.providerData)
+        ? passedUser.providerData.map((provider) => provider?.photoURL)
+        : []
+
+    const candidatePhotoURL = [passedUser.photoURL, ...providerPhotoURLs]
+        .find((photoURL) => typeof photoURL === 'string' && photoURL.trim().length > 0)
+
+    if (!candidatePhotoURL) {
+        return null
+    }
+
+    if (candidatePhotoURL.startsWith('http://')) {
+        return `https://${candidatePhotoURL.slice('http://'.length)}`
+    }
+
+    return candidatePhotoURL
+}

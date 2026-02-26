@@ -1,11 +1,12 @@
 <script setup>
 import AppIcon from './icons/IconApp.vue'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { auth } from '../firebase'
-import { setCurrentUser } from '../authenticateUser'
+import { resolveUserPhotoURL, setCurrentUser } from '../authenticateUser'
 
 const currentUser = ref(null)
+const currentUserPhotoURL = computed(() => resolveUserPhotoURL(currentUser.value))
 let authUnsubscribe = null
 
 defineProps({
@@ -84,9 +85,10 @@ onBeforeUnmount(() => {
                         <div class="buttons">
                             <RouterLink to="/auth" class="button is-light auth-button">
                                 <img
-                                    v-if="currentUser?.photoURL"
-                                    :src="currentUser.photoURL"
+                                    v-if="currentUserPhotoURL"
+                                    :src="currentUserPhotoURL"
                                     alt="User profile picture"
+                                    referrerpolicy="no-referrer"
                                     class="user-avatar"
                                 >
                                 <span>{{ currentUser ? 'Account' : 'Sign In' }}</span>

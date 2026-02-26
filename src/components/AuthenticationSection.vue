@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted } from 'vue';
 import { query, collection, onSnapshot } from "firebase/firestore";
 import { auth, db } from '../firebase';
-import { setCurrentUser, getCurrentUser, setupHTMLHandlers } from '../authenticateUser'
+import { setCurrentUser, getCurrentUser, resolveUserPhotoURL, setupHTMLHandlers } from '../authenticateUser'
 
 let items
 let authUnsubscribe = null
@@ -42,8 +42,13 @@ onMounted(() => {
             coordsContainer.style.display = "block"
 
             // Personalize userDetails section for each user
+            const userPhotoURL = resolveUserPhotoURL(user)
+            const userPhotoMarkup = userPhotoURL
+                ? `<img src="${userPhotoURL}" referrerpolicy="no-referrer" style="width: 64px; height: 64px; border-radius: 50%"><br>`
+                : ''
+
             userDetails.innerHTML = `
-            <img src="${user.photoURL}" style="width: 64px; height: 64px; border-radius: 50%"><br>
+            ${userPhotoMarkup}
             <h3 class="title">Hello ${user.displayName}! </h3> 
             <p>You are currently signed in</p>
             <p class="code">${user.email ? user.email : ''}</p><br>
