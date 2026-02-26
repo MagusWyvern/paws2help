@@ -138,6 +138,13 @@ onBeforeUnmount(() => {
     font-weight: 700;
 }
 
+.site-brand:hover,
+.site-brand:focus,
+.site-brand:active {
+    background-color: transparent;
+    color: #ffffff;
+}
+
 .brand-icon {
     width: 2rem;
 }
