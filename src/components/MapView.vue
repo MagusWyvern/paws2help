@@ -3,8 +3,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { query, collection, onSnapshot } from "firebase/firestore";
-import { db } from '../firebase';
+import { query, collection, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from '../firebase';
 import { getCurrentUser } from '../authenticateUser';
 import { donatingCatIcon, receivingCatIcon } from './icons/LeafletIcon'
 import { addPetCoords } from '../addPetCoords'
@@ -37,7 +37,9 @@ let options = {
 var popup = L.popup();
 const mapInteractionEnabled = ref(false);
 let markersUnsubscribe = null;
+let authUnsubscribe = null;
 const interactionKeyLabel = ref('Ctrl');
+const isLoggedIn = ref(Boolean(getCurrentUser()));
 
 function onMapClick(e) {
     popup
@@ -77,6 +79,9 @@ onMounted(() => {
     window.addEventListener('keydown', updateInteractionModifierState);
     window.addEventListener('keyup', updateInteractionModifierState);
     window.addEventListener('blur', resetInteractionModifierState);
+    authUnsubscribe = auth.onAuthStateChanged((user) => {
+        isLoggedIn.value = Boolean(user)
+    })
 
     // Query the data from Firestore, then plot it on the map with Leaflet icons
     const markersQuery = query(collection(db, "pet-coords"));
@@ -153,6 +158,51 @@ onMounted(() => {
         }
     }
 
+    const submitStrayReport = document.getElementById('submitStrayReport')
+    const reportAnimalType = document.getElementById('reportAnimalType')
+    const reportEstimatedCount = document.getElementById('reportEstimatedCount')
+    const reportRegion = document.getElementById('reportRegion')
+    const reportSubmissionStatus = document.getElementById('reportSubmissionStatus')
+
+    if (submitStrayReport) {
+        submitStrayReport.onclick = async () => {
+            const currentUser = getCurrentUser()
+            if (!currentUser) {
+                reportSubmissionStatus.innerHTML = 'Please sign in to submit a report.'
+                return
+            }
+
+            const animalTypeValue = reportAnimalType.value.trim()
+            const estimatedCountValue = Number.parseInt(reportEstimatedCount.value, 10)
+            const regionValue = reportRegion.value.trim()
+            const mapCenter = mymap.getCenter()
+
+            if (!animalTypeValue || !regionValue || Number.isNaN(estimatedCountValue) || estimatedCountValue < 1) {
+                reportSubmissionStatus.innerHTML = 'Fill in animal type, estimated number, and region.'
+                return
+            }
+
+            try {
+                await addDoc(collection(db, 'stray-reports'), {
+                    uid: currentUser.uid,
+                    animalType: animalTypeValue,
+                    estimatedCount: estimatedCountValue,
+                    region: regionValue,
+                    coords: [mapCenter.lat, mapCenter.lng],
+                    createdAt: serverTimestamp(),
+                })
+
+                reportAnimalType.value = ''
+                reportEstimatedCount.value = ''
+                reportRegion.value = ''
+                reportSubmissionStatus.innerHTML = 'Report submitted.'
+            } catch (error) {
+                console.error('Failed to submit stray report:', error)
+                reportSubmissionStatus.innerHTML = 'Failed to submit report. Try again.'
+            }
+        }
+    }
+
 
 })
 
@@ -163,6 +213,10 @@ onBeforeUnmount(() => {
 
     if (markersUnsubscribe) {
         markersUnsubscribe()
+    }
+
+    if (authUnsubscribe) {
+        authUnsubscribe()
     }
 })
 
@@ -186,6 +240,39 @@ onBeforeUnmount(() => {
                 @click.prevent.stop
             />
         </div>
+
+        <section class="box report-box">
+            <h3 class="title is-5">Report Stray Animals</h3>
+            <p class="subtitle is-6">Submit a report for the current map region.</p>
+
+            <div v-if="isLoggedIn">
+                <div class="field">
+                    <label class="label" for="reportAnimalType">Animal type</label>
+                    <div class="control">
+                        <input id="reportAnimalType" class="input" type="text" placeholder="e.g. Cat, Dog">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="reportEstimatedCount">Estimated number</label>
+                    <div class="control">
+                        <input id="reportEstimatedCount" class="input" type="number" min="1" placeholder="e.g. 5">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="reportRegion">Region description</label>
+                    <div class="control">
+                        <input id="reportRegion" class="input" type="text" placeholder="e.g. Jalan Melati near the food court">
+                    </div>
+                </div>
+
+                <button id="submitStrayReport" class="button is-warning">Submit Stray Report</button>
+                <p id="reportSubmissionStatus" class="is-size-7 mt-2"></p>
+            </div>
+
+            <p v-else class="is-size-7">Sign in to submit stray-animal reports.</p>
+        </section>
     </div>
 </template>
 
@@ -211,6 +298,7 @@ onBeforeUnmount(() => {
 .map-frame {
     position: relative;
     margin: 5vh;
+    margin-bottom: 1rem;
 }
 
 #main_map {
@@ -244,5 +332,9 @@ onBeforeUnmount(() => {
     -moz-transition: -moz-stroke-dashoffset 0.3s ease-out, -moz-stroke-opacity 0.3s ease-in;
     -o-transition: -o-stroke-dashoffset 0.3s ease-out, -o-stroke-opacity 0.3s ease-in;
     transition: stroke-dashoffset 0.3s ease-out, stroke-opacity 0.3s ease-in;
+}
+
+.report-box {
+    margin: 0 5vh 3vh;
 }
 </style>

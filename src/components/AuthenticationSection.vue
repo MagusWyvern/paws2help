@@ -1,32 +1,131 @@
 <script setup>
 import { onBeforeUnmount, onMounted } from 'vue';
-import { query, collection, onSnapshot } from "firebase/firestore";
+import { query, collection, onSnapshot, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { auth, db } from '../firebase';
 import { setCurrentUser, getCurrentUser, resolveUserPhotoURL, setupHTMLHandlers } from '../authenticateUser'
 
 let items
 let authUnsubscribe = null
 let markersUnsubscribe = null
+let reportsUnsubscribe = null
+
+function formatAccountCreationDate(user) {
+    const creationTime = user?.metadata?.creationTime
+    if (!creationTime) {
+        return 'Unknown'
+    }
+
+    const parsedDate = new Date(creationTime)
+    if (Number.isNaN(parsedDate.getTime())) {
+        return creationTime
+    }
+
+    return parsedDate.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    })
+}
 
 onMounted(() => {
+    const signInNow = document.getElementById('signInNow')
     const signInButton = document.getElementById('signInButton');
-    const signOutButton = document.getElementById('signOutButton');
     const userDetails = document.getElementById('userDetails');
     const coordsContainer = document.getElementById('coordsContainer')
     const coordsList = document.getElementById('coordsList')
+    const reportsContainer = document.getElementById('reportsContainer')
+    const reportsList = document.getElementById('reportsList')
 
-    setupHTMLHandlers({ signInButton, signOutButton })
+    setupHTMLHandlers({ signInButton, signOutButton: null })
 
-    signOutButton.style.display = "none"
+    signInNow.style.display = "block"
     userDetails.innerHTML = ''
     userDetails.style.display = "none"
     coordsContainer.style.display = "none"
     coordsList.innerHTML = ''
+    reportsContainer.style.display = "none"
+    reportsList.innerHTML = ''
+    reportsList.onclick = async (event) => {
+        const actionButton = event.target.closest('button[data-action]')
+        if (!actionButton) {
+            return
+        }
+
+        const reportId = actionButton.dataset.id
+        const action = actionButton.dataset.action
+        const currentUser = getCurrentUser()
+
+        if (!currentUser || !reportId) {
+            return
+        }
+
+        const reportRef = doc(db, 'stray-reports', reportId)
+
+        if (action === 'delete') {
+            const shouldDelete = window.confirm('Delete this report?')
+            if (!shouldDelete) {
+                return
+            }
+
+            try {
+                await deleteDoc(reportRef)
+            } catch (error) {
+                console.error('Failed to delete report:', error)
+            }
+            return
+        }
+
+        if (action === 'edit') {
+            const currentAnimalType = decodeURIComponent(actionButton.dataset.animalType || '')
+            const currentEstimatedCount = decodeURIComponent(actionButton.dataset.estimatedCount || '')
+            const currentRegion = decodeURIComponent(actionButton.dataset.region || '')
+
+            const nextAnimalType = window.prompt('Animal type', currentAnimalType)
+            if (nextAnimalType === null) {
+                return
+            }
+
+            const nextEstimatedCountRaw = window.prompt('Estimated number', currentEstimatedCount)
+            if (nextEstimatedCountRaw === null) {
+                return
+            }
+
+            const nextEstimatedCount = Number.parseInt(nextEstimatedCountRaw, 10)
+            if (Number.isNaN(nextEstimatedCount) || nextEstimatedCount < 1) {
+                window.alert('Estimated number must be at least 1.')
+                return
+            }
+
+            const nextRegion = window.prompt('Region', currentRegion)
+            if (nextRegion === null) {
+                return
+            }
+
+            if (!nextAnimalType.trim() || !nextRegion.trim()) {
+                window.alert('Animal type and region are required.')
+                return
+            }
+
+            try {
+                await updateDoc(reportRef, {
+                    animalType: nextAnimalType.trim(),
+                    estimatedCount: nextEstimatedCount,
+                    region: nextRegion.trim(),
+                })
+            } catch (error) {
+                console.error('Failed to update report:', error)
+            }
+        }
+    }
 
     authUnsubscribe = auth.onAuthStateChanged((user) => {
         if (markersUnsubscribe) {
             markersUnsubscribe()
             markersUnsubscribe = null
+        }
+        if (reportsUnsubscribe) {
+            reportsUnsubscribe()
+            reportsUnsubscribe = null
         }
 
         if (user) {
@@ -35,24 +134,40 @@ onMounted(() => {
             setCurrentUser(user)
 
             // Hide the sign in button when a user is logged in
+            signInNow.style.display = "none"
             signInButton.style.visibility = "hidden";
             signInButton.style.display = "none";
-            signOutButton.style.display = "inline-flex"
-            userDetails.style.display = "flex"
+            userDetails.style.display = "block"
             coordsContainer.style.display = "block"
+            reportsContainer.style.display = "block"
 
             // Personalize userDetails section for each user
             const userPhotoURL = resolveUserPhotoURL(user)
             const userPhotoMarkup = userPhotoURL
-                ? `<img src="${userPhotoURL}" referrerpolicy="no-referrer" style="width: 64px; height: 64px; border-radius: 50%"><br>`
-                : ''
+                ? `<img src="${userPhotoURL}" class="profile-avatar" referrerpolicy="no-referrer" alt="Profile photo">`
+                : `<div class="profile-avatar profile-avatar-fallback">${(user.displayName || user.email || 'U').charAt(0).toUpperCase()}</div>`
+            const accountCreationDate = formatAccountCreationDate(user)
+            const displayName = user.displayName || 'User'
 
             userDetails.innerHTML = `
-            ${userPhotoMarkup}
-            <h3 class="title">Hello ${user.displayName}! </h3> 
-            <p>You are currently signed in</p>
-            <p class="code">${user.email ? user.email : ''}</p><br>
+            <section class="account-hero">
+                <div class="account-hero-main">
+                    ${userPhotoMarkup}
+                    <div class="account-hero-meta">
+                        <h3 class="title is-4">Hello ${displayName}</h3>
+                        <p class="account-meta-row"><b>Email:</b> ${user.email ? user.email : 'Not provided'}</p>
+                        <p class="account-meta-row"><b>Member since:</b> ${accountCreationDate}</p>
+                    </div>
+                </div>
+                <div class="account-hero-actions-row">
+                    <button id="signOutButton" class="button is-danger">Sign Out</button>
+                </div>
+            </section>
             `;
+
+            const updatedSignOutButton = document.getElementById('signOutButton')
+            setupHTMLHandlers({ signInButton, signOutButton: updatedSignOutButton })
+            updatedSignOutButton.style.display = "inline-flex"
 
             // Query all the markers where the current user made it
             const personalMarkersQuery = query(collection(db, "pet-coords"));
@@ -95,20 +210,71 @@ onMounted(() => {
                     }
                 });
 
-                coordsList.innerHTML = items.join('');
+                coordsList.innerHTML = items.length > 0 ? items.join('') : '<p>No registered coordinates yet.</p>';
+            })
+
+            const personalReportsQuery = query(collection(db, "stray-reports"));
+
+            reportsUnsubscribe = onSnapshot(personalReportsQuery, (querySnapshot) => {
+                const reports = []
+
+                querySnapshot.forEach((doc) => {
+                    let currentUser = getCurrentUser()
+
+                    if (currentUser && doc.data().uid == currentUser.uid) {
+                        const timestamp = doc.data().createdAt?.toDate
+                            ? doc.data().createdAt.toDate().toLocaleString()
+                            : 'Just now'
+
+                        const reportCard = `
+                        <article class="box report-item">
+                            <p><b>Animal:</b> ${doc.data().animalType}</p>
+                            <p><b>Estimated count:</b> ${doc.data().estimatedCount}</p>
+                            <p><b>Region:</b> ${doc.data().region}</p>
+                            <p class="is-size-7 has-text-grey">Reported: ${timestamp}</p>
+                            <div class="buttons are-small mt-3">
+                                <button
+                                    class="button is-warning is-light"
+                                    data-action="edit"
+                                    data-id="${doc.id}"
+                                    data-animal-type="${encodeURIComponent(doc.data().animalType || '')}"
+                                    data-estimated-count="${encodeURIComponent(doc.data().estimatedCount || '')}"
+                                    data-region="${encodeURIComponent(doc.data().region || '')}"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    class="button is-danger is-light"
+                                    data-action="delete"
+                                    data-id="${doc.id}"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </article>
+                        `
+                        reports.push(reportCard)
+                    }
+                })
+
+                reportsList.innerHTML = reports.length > 0
+                    ? reports.join('')
+                    : '<p class="has-text-grey">No stray reports yet. Submit one from the map page.</p>';
             })
         } else {
             console.info("User is not currently logged in.")
 
             setCurrentUser(null)
 
+            signInNow.style.display = "block"
             signInButton.style.visibility = "visible"
             signInButton.style.display = "inline-flex"
-            signOutButton.style.display = "none"
             userDetails.innerHTML = '';
             userDetails.style.display = "none"
             coordsContainer.style.display = "none"
             coordsList.innerHTML = ''
+            reportsContainer.style.display = "none"
+            reportsList.innerHTML = ''
         }
     })
 })
@@ -121,6 +287,10 @@ onBeforeUnmount(() => {
     if (markersUnsubscribe) {
         markersUnsubscribe()
     }
+
+    if (reportsUnsubscribe) {
+        reportsUnsubscribe()
+    }
 })
 </script>
 
@@ -128,31 +298,35 @@ onBeforeUnmount(() => {
     <div id="signInNow">
         <h1 class="title is-4">Ready to get started?</h1>
 
-        <p class="subtitle is-6">Pet listing is only available for logged-in users.</p>
+        <p class="subtitle is-6">Pet listings and stray-animal reports are available for logged-in users.</p>
 
         <button id="signInButton" class="button is-success">Sign In with Google</button><br><br>
     </div>
 
     <div class="box" id="userDetails" style="display: none;"></div><br><br>
     
-    <center>
-
-        <section id="coordsContainer" style="display: none;">
-            <h1 class="title is-4">Registered Coordinates</h1>
-            <p class="subtitle is-6">This is the list of location(s) that you have registered using this account before:</p>
-            <div id="coordsList">
+    <section class="columns is-variable is-5 account-sections">
+        <section class="column" id="coordsContainer" style="display: none;">
+            <div class="box">
+                <h1 class="title is-4">Pet Listings</h1>
+                <p class="subtitle is-6">Locations you have listed for adoption activity.</p>
+                <div id="coordsList"></div>
             </div>
         </section>
-    </center>
 
-    <div>
-        <button id="signOutButton" class="button is-danger" style="display: none;">Sign Out</button>
-    </div>
+        <section class="column" id="reportsContainer" style="display: none;">
+            <div class="box">
+                <h1 class="title is-4">Stray Animal Reports</h1>
+                <p class="subtitle is-6">Your previously submitted stray-animal reports.</p>
+                <div id="reportsList"></div>
+            </div>
+        </section>
+    </section>
 
 </template>
 
 <style scoped>
-div {
+#signInNow {
     padding-top: 2em;
     display: flex;
     align-items: center;
@@ -161,21 +335,86 @@ div {
     flex-direction: column;
 }
 
-#coordsContainer {
-    padding-left: 2em;
+.subtitle {
+    padding: 0.25rem 0 1rem;
 }
 
-.subtitle {
-    padding: 2em;
+#signInNow .subtitle {
+    padding: 1rem 0 1.5rem;
 }
 
 #userDetails {
     background-color: #85CEFF;
+    padding: 1.25rem;
+}
+
+#userDetails :deep(.account-hero) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    width: 100%;
+}
+
+#userDetails :deep(.account-hero-main) {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+#userDetails :deep(.account-hero-meta) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+#userDetails :deep(.account-meta-row) {
+    margin: 0;
+}
+
+#userDetails :deep(.account-hero-actions-row) {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+}
+
+#userDetails :deep(.account-hero-actions-row .button) {
+    margin-left: auto;
+}
+
+#userDetails :deep(.profile-avatar) {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+#userDetails :deep(.profile-avatar-fallback) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #ffffff;
+    background: #3273dc;
 }
 
 #coordsList {
-    padding: 2em
+    padding: 1em 0;
 }
 
+#reportsList {
+    padding: 1em 0 0;
+}
+
+.report-item {
+    margin: 0 0 1rem;
+    text-align: left;
+}
+
+.account-sections {
+    margin: 0 1rem;
+    margin-top: 0.5rem;
+}
 
 </style>
