@@ -4,6 +4,8 @@ import HomeView from '../views/HomeView.vue'
 import AuthView from '../views/AuthView.vue'
 import MapListingsView from '../views/MapListingsView.vue'
 import ChatView from '../views/ChatView.vue'
+import PrivacyView from '../views/PrivacyView.vue'
+import TermsView from '../views/TermsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -27,6 +29,16 @@ const router = createRouter({
       path: '/chat',
       name: 'chat',
       component: ChatView,
+    },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: PrivacyView,
+    },
+    {
+      path: '/terms',
+      name: 'terms',
+      component: TermsView,
     },
   ],
 })

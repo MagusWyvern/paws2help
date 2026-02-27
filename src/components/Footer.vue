@@ -1,4 +1,5 @@
-<script>
+<script setup>
+import { RouterLink } from 'vue-router'
 </script>
 
 <template>
@@ -23,9 +24,9 @@
                 <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>. The website content
                 is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
             </p>
-            <a href="./privacy.html">Privacy Policy</a>
+            <RouterLink to="/privacy">Privacy Policy</RouterLink>
             |
-            <a href="./terms.html">Terms of Use</a>
+            <RouterLink to="/terms">Terms of Use</RouterLink>
         </div>
     </footer>
 </template>
