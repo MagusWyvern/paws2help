@@ -269,7 +269,10 @@ onMounted(() => {
             updatedSignOutButton.style.display = "inline-flex"
 
             // Query all the markers where the current user made it
-            const personalMarkersQuery = query(collection(db, "pet-coords"));
+            const personalMarkersQuery = query(
+                collection(db, "pet-coords"),
+                where('uid', '==', user.uid)
+            );
 
             markersUnsubscribe = onSnapshot(personalMarkersQuery, (querySnapshot) => {
                 // Empty the list every time a new snapshot is received
@@ -312,7 +315,10 @@ onMounted(() => {
                 coordsList.innerHTML = items.length > 0 ? items.join('') : '<p>No registered coordinates yet.</p>';
             })
 
-            const personalReportsQuery = query(collection(db, "stray-reports"));
+            const personalReportsQuery = query(
+                collection(db, "stray-reports"),
+                where('uid', '==', user.uid)
+            );
 
             reportsUnsubscribe = onSnapshot(personalReportsQuery, (querySnapshot) => {
                 const reports = []
