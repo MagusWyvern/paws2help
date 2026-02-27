@@ -1,12 +1,13 @@
 <script setup>
 import AppIcon from './icons/IconApp.vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { auth } from '../firebase'
-import { resolveUserPhotoURL, setCurrentUser } from '../authenticateUser'
+import { resolveUserPhotoURL, setCurrentUser, startSignIn } from '../authenticateUser'
 
 const currentUser = ref(null)
 const currentUserPhotoURL = computed(() => resolveUserPhotoURL(currentUser.value))
+const router = useRouter()
 let authUnsubscribe = null
 
 defineProps({
@@ -63,6 +64,15 @@ onBeforeUnmount(() => {
     }
 })
 
+async function handleAuthButtonClick() {
+    if (currentUser.value) {
+        await router.push('/auth')
+        return
+    }
+
+    await startSignIn()
+}
+
 </script>
 
 <template>
@@ -84,7 +94,7 @@ onBeforeUnmount(() => {
                 <div class="navbar-end">
                     <div class="navbar-item">
                         <div class="buttons">
-                            <RouterLink to="/auth" class="button is-light auth-button">
+                            <button type="button" class="button is-light auth-button" @click="handleAuthButtonClick">
                                 <img
                                     v-if="currentUserPhotoURL"
                                     :src="currentUserPhotoURL"
@@ -93,7 +103,7 @@ onBeforeUnmount(() => {
                                     class="user-avatar"
                                 >
                                 <span>{{ currentUser ? 'Account' : 'Sign In' }}</span>
-                            </RouterLink>
+                            </button>
                             <a id="add-button" class="button is-link">Download App</a>
                         </div>
                     </div>

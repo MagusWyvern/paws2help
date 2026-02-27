@@ -7,7 +7,7 @@ onAuthStateChanged(auth, (currentUser) => {
     user = currentUser || null
 })
 
-async function startSignIn() {
+export async function startSignIn() {
     try {
         await signInWithPopup(auth, provider)
     } catch (error) {
