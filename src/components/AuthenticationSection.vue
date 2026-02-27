@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted } from 'vue';
-import { query, collection, onSnapshot, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { query, collection, onSnapshot, updateDoc, deleteDoc, doc, getDocs, where, writeBatch } from "firebase/firestore";
+import { deleteUser } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { setCurrentUser, getCurrentUser, resolveUserPhotoURL, setupHTMLHandlers } from '../authenticateUser'
 
@@ -35,6 +36,11 @@ onMounted(() => {
     const coordsList = document.getElementById('coordsList')
     const reportsContainer = document.getElementById('reportsContainer')
     const reportsList = document.getElementById('reportsList')
+    const dangerZoneContainer = document.getElementById('dangerZoneContainer')
+    const deleteAllListingsButton = document.getElementById('deleteAllListingsButton')
+    const deleteAllReportsButton = document.getElementById('deleteAllReportsButton')
+    const deleteAccountButton = document.getElementById('deleteAccountButton')
+    const dangerZoneStatus = document.getElementById('dangerZoneStatus')
 
     setupHTMLHandlers({ signInButton, signOutButton: null })
 
@@ -45,6 +51,98 @@ onMounted(() => {
     coordsList.innerHTML = ''
     reportsContainer.style.display = "none"
     reportsList.innerHTML = ''
+    dangerZoneContainer.style.display = "none"
+    dangerZoneStatus.innerHTML = ''
+
+    deleteAllListingsButton.onclick = async () => {
+        const currentUser = getCurrentUser()
+        if (!currentUser) {
+            return
+        }
+
+        const shouldDelete = window.confirm('Delete all your pet listings? This cannot be undone.')
+        if (!shouldDelete) {
+            return
+        }
+
+        try {
+            const listingsQuery = query(collection(db, 'pet-coords'), where('uid', '==', currentUser.uid))
+            const listingsSnapshot = await getDocs(listingsQuery)
+
+            if (listingsSnapshot.empty) {
+                dangerZoneStatus.innerHTML = 'No listings to delete.'
+                return
+            }
+
+            const batch = writeBatch(db)
+            listingsSnapshot.forEach((listingDoc) => {
+                batch.delete(listingDoc.ref)
+            })
+            await batch.commit()
+            dangerZoneStatus.innerHTML = `Deleted ${listingsSnapshot.size} listing(s).`
+        } catch (error) {
+            console.error('Failed to delete listings:', error)
+            dangerZoneStatus.innerHTML = 'Failed to delete listings.'
+        }
+    }
+
+    deleteAllReportsButton.onclick = async () => {
+        const currentUser = getCurrentUser()
+        if (!currentUser) {
+            return
+        }
+
+        const shouldDelete = window.confirm('Delete all your stray reports? This cannot be undone.')
+        if (!shouldDelete) {
+            return
+        }
+
+        try {
+            const reportsQuery = query(collection(db, 'stray-reports'), where('uid', '==', currentUser.uid))
+            const reportsSnapshot = await getDocs(reportsQuery)
+
+            if (reportsSnapshot.empty) {
+                dangerZoneStatus.innerHTML = 'No reports to delete.'
+                return
+            }
+
+            const batch = writeBatch(db)
+            reportsSnapshot.forEach((reportDoc) => {
+                batch.delete(reportDoc.ref)
+            })
+            await batch.commit()
+            dangerZoneStatus.innerHTML = `Deleted ${reportsSnapshot.size} report(s).`
+        } catch (error) {
+            console.error('Failed to delete reports:', error)
+            dangerZoneStatus.innerHTML = 'Failed to delete reports.'
+        }
+    }
+
+    deleteAccountButton.onclick = async () => {
+        const currentUser = getCurrentUser()
+        if (!currentUser) {
+            return
+        }
+
+        const shouldDelete = window.confirm(
+            'Delete your account entirely? You may need to sign in again before this succeeds.'
+        )
+        if (!shouldDelete) {
+            return
+        }
+
+        try {
+            await deleteUser(currentUser)
+            dangerZoneStatus.innerHTML = 'Account deleted.'
+        } catch (error) {
+            console.error('Failed to delete account:', error)
+            if (error?.code === 'auth/requires-recent-login') {
+                dangerZoneStatus.innerHTML = 'Please sign out and sign in again, then retry account deletion.'
+                return
+            }
+            dangerZoneStatus.innerHTML = 'Failed to delete account.'
+        }
+    }
     reportsList.onclick = async (event) => {
         const actionButton = event.target.closest('button[data-action]')
         if (!actionButton) {
@@ -140,6 +238,7 @@ onMounted(() => {
             userDetails.style.display = "block"
             coordsContainer.style.display = "block"
             reportsContainer.style.display = "block"
+            dangerZoneContainer.style.display = "block"
 
             // Personalize userDetails section for each user
             const userPhotoURL = resolveUserPhotoURL(user)
@@ -275,6 +374,8 @@ onMounted(() => {
             coordsList.innerHTML = ''
             reportsContainer.style.display = "none"
             reportsList.innerHTML = ''
+            dangerZoneContainer.style.display = "none"
+            dangerZoneStatus.innerHTML = ''
         }
     })
 })
@@ -321,6 +422,17 @@ onBeforeUnmount(() => {
                 <div id="reportsList"></div>
             </div>
         </section>
+    </section>
+
+    <section id="dangerZoneContainer" class="box danger-zone" style="display: none;">
+        <h2 class="title is-5 has-text-danger">Danger Zone</h2>
+        <p class="subtitle is-6">These actions are destructive and cannot be undone.</p>
+        <div class="buttons">
+            <button id="deleteAllListingsButton" class="button is-danger is-light">Delete All Listings</button>
+            <button id="deleteAllReportsButton" class="button is-danger is-light">Delete All Reports</button>
+            <button id="deleteAccountButton" class="button is-danger">Delete Account</button>
+        </div>
+        <p id="dangerZoneStatus" class="is-size-7 has-text-grey"></p>
     </section>
 
 </template>
@@ -415,6 +527,11 @@ onBeforeUnmount(() => {
 .account-sections {
     margin: 0 1rem;
     margin-top: 0.5rem;
+}
+
+.danger-zone {
+    margin: 1rem;
+    border: 1px solid #f14668;
 }
 
 </style>
