@@ -78,6 +78,7 @@ onBeforeUnmount(() => {
                     <RouterLink to="/" class="navbar-item">Home</RouterLink>
                     <RouterLink to="/auth" class="navbar-item">Account</RouterLink>
                     <RouterLink to="/map" class="navbar-item">Map</RouterLink>
+                    <RouterLink to="/chat" class="navbar-item">Chat</RouterLink>
                 </div>
 
                 <div class="navbar-end">

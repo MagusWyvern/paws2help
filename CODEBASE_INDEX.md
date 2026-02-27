@@ -38,6 +38,9 @@
   - `src/components/PetListing.vue`
   - `src/addPetCoords.js`
   - Opens modal, collects form fields from DOM, reverse-geocodes with Nominatim, writes to Firestore.
+- Chat:
+  - `src/components/ChatPanel.vue`
+  - Starts from map marker popup events and persists conversations/messages in Firestore.
 - PWA behavior:
   - `src/components/PageHero.vue` handles install prompt UI.
   - `public/service-worker.js` sets Workbox image caching.
@@ -52,6 +55,7 @@
 - `src/components/PetListing.vue`: listing modal and submit trigger.
 - `src/components/PageHero.vue`: header/hero and install prompt wiring.
 - `src/components/Footer.vue`: footer/reminder content.
+- `src/components/ChatPanel.vue`: real-time listing conversations for authenticated users.
 - `src/components/icons/LeafletIcon.js`: Leaflet icon definitions.
 - `src/components/icons/*.vue`: SVG-like Vue icon components for UI.
 - `src/components/__tests__/App.spec.js`: basic `PageHero` render test.
@@ -64,6 +68,10 @@
   - `src/components/AuthenticationSection.vue`
   - `src/components/MapView.vue`
 - Firestore collection: `pet-coords`
+- Firestore collections:
+  - `pet-coords`
+  - `stray-reports`
+  - `conversations` with nested `messages` subcollection
 - Reverse geocoding API: `https://nominatim.openstreetmap.org/reverse`
 - Map tiles: Mapbox style endpoint in `src/components/MapView.vue`
 

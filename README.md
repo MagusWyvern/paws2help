@@ -4,6 +4,15 @@
 
 The primary goal for this web app is to allow pet owners to list their pets up for adoption. Along with some planned features for local communities to report stray animals and lost pets.
 
+## Feature Roadmap Notes
+
+- [x] In-app chat MVP between listing owners and interested adopters
+  - Start chat from a map marker popup ("Message Owner")
+  - Real-time conversation panel for signed-in users
+  - Firestore security rules to restrict chat access to conversation participants
+- [ ] Chat moderation (report/block user, anti-spam controls)
+- [ ] Push notifications for new chat messages
+
 ## Build Pipeline
 
 Netlify automatically builds the web app from each new commit to the main branch
@@ -42,4 +51,3 @@ npm run build
 ```sh
 npm run test:unit
 ```
-

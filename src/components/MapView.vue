@@ -10,29 +10,7 @@ import { donatingCatIcon, receivingCatIcon } from './icons/LeafletIcon'
 import { addPetCoords } from '../addPetCoords'
 
 let mymap
-let petImage
-let creatorPhone
-let creatorName
-
-var markerClusters = L.markerClusterGroup()
-var markers = new Array();
-
-let userlatitude = 0;
-let userlongitude = 0;
-let position = {
-    coords:
-    {
-        lat: 0,
-        lng: 0
-    }
-}
-
-// Options parameter for user geolocation
-let options = {
-    enableHighAccuracy: true,
-    timeout: 5000,
-    maximumAge: 0
-};
+let markers = []
 
 var popup = L.popup();
 const mapInteractionEnabled = ref(false);
@@ -70,6 +48,49 @@ function resetInteractionModifierState() {
     mapInteractionEnabled.value = false;
 }
 
+function escapeHTML(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+}
+
+function onPopupOpen(event) {
+    const popupElement = event.popup?.getElement()
+    if (!popupElement) {
+        return
+    }
+
+    const startChatButton = popupElement.querySelector('.start-chat-button')
+    if (!startChatButton) {
+        return
+    }
+
+    startChatButton.addEventListener('click', () => {
+        const currentUser = getCurrentUser()
+        if (!currentUser) {
+            window.alert('Sign in to start a chat.')
+            return
+        }
+
+        const ownerUid = startChatButton.dataset.ownerUid
+        if (!ownerUid || ownerUid === currentUser.uid) {
+            return
+        }
+
+        window.dispatchEvent(new CustomEvent('p2h:start-chat', {
+            detail: {
+                listingId: startChatButton.dataset.listingId || '',
+                listingAddress: startChatButton.dataset.listingAddress || '',
+                listingOwnerUid: ownerUid,
+                listingOwnerName: startChatButton.dataset.listingOwnerName || 'Pet owner',
+            },
+        }))
+        mymap.closePopup()
+    }, { once: true })
+}
+
 onMounted(() => {
     if (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)) {
         interactionKeyLabel.value = 'Cmd';
@@ -82,64 +103,66 @@ onMounted(() => {
     authUnsubscribe = auth.onAuthStateChanged((user) => {
         isLoggedIn.value = Boolean(user)
     })
+    mymap.on('popupopen', onPopupOpen)
 
     // Query the data from Firestore, then plot it on the map with Leaflet icons
     const markersQuery = query(collection(db, "pet-coords"));
 
     markersUnsubscribe = onSnapshot(markersQuery, (querySnapshot) => {
-        const cities = [];
+        markers.forEach((marker) => {
+            mymap.removeLayer(marker)
+        })
+        markers = []
 
-        querySnapshot.forEach((doc) => {
-
-            // Logging: Log every document fetched in their raw object form
-            // console.log(JSON.stringify(doc.data()))
-
-            cities.push(doc.data().addressName)
-
-            if (doc.data().petImage == undefined) {
-                petImage = "../assets/logo.svg"
-            } else {
-                petImage = doc.data().petImage
-            };
-
-            if (doc.data().creatorName == undefined) {
-                creatorName = "Anonymous"
-            } else {
-                creatorName = doc.data().creatorName
+        querySnapshot.forEach((listingDoc) => {
+            const listing = listingDoc.data()
+            const coords = Array.isArray(listing.coords) ? listing.coords : null
+            if (!coords || coords.length < 2) {
+                return
             }
 
-            if (doc.data().creatorPhone == undefined) {
-                creatorPhone = "No phone number provided"
-            } else {
-                creatorPhone = doc.data().creatorPhone
-            }
+            const petImage = listing.petImage || "../assets/logo.svg"
+            const creatorName = listing.creatorName || "Anonymous"
+            const creatorPhone = listing.creatorPhone || "No phone number provided"
+            const ownerUid = listing.uid || ''
+            const addressName = listing.addressName || 'Unknown address'
+            const currentUser = getCurrentUser()
+            const canStartChat = Boolean(
+                currentUser &&
+                ownerUid &&
+                currentUser.uid !== ownerUid
+            )
 
-            let chosenIcon
+            const chosenIcon = listing.donate ? donatingCatIcon : receivingCatIcon
 
-            if (doc.data().donate) {
-                chosenIcon = donatingCatIcon
-            } else {
-                chosenIcon = receivingCatIcon
-            }
+            const chatButtonMarkup = canStartChat
+                ? `
+                <button
+                    class="button is-small is-link mt-2 start-chat-button"
+                    data-listing-id="${escapeHTML(listingDoc.id)}"
+                    data-owner-uid="${escapeHTML(ownerUid)}"
+                    data-listing-owner-name="${escapeHTML(creatorName)}"
+                    data-listing-address="${escapeHTML(addressName)}"
+                >
+                    Message Owner
+                </button>
+                `
+                : ''
 
-            let newMarker = new L.marker([doc.data().coords[0], doc.data().coords[1]], { icon: chosenIcon }).bindPopup(`${doc.data().donate ? 'I am donating' : 'I am looking for'} cats!<br>Adress: ${doc.data().addressName}<br>Name: ${creatorName}<br>Phone Number: ${creatorPhone}<br><img src="${petImage}" style="width: 84px; height: 84px; border-radius: 50%">`);
+            const marker = new L.marker([coords[0], coords[1]], { icon: chosenIcon }).bindPopup(`
+                <div>
+                    <p>${listing.donate ? 'I am donating' : 'I am looking for'} cats!</p>
+                    <p><b>Address:</b> ${escapeHTML(addressName)}</p>
+                    <p><b>Name:</b> ${escapeHTML(creatorName)}</p>
+                    <p><b>Phone Number:</b> ${escapeHTML(creatorPhone)}</p>
+                    <img src="${escapeHTML(petImage)}" alt="Pet image" style="width: 84px; height: 84px; border-radius: 50%">
+                    ${chatButtonMarkup}
+                </div>
+            `)
 
-            if (markers.includes(newMarker) == false) {
-                markers.push(newMarker);
-            } else {
-                console.info('Marker already exists');
-            }
-        });
-
-
-        for (let i = 0; i < markers.length; i++) {
-            mymap.addLayer(markers[i])
-        }
-
-        // Loggging
-        // console.info('Current markers array length: ' + markers.length)
-        // console.log("Loaded address names: ", cities.join(", "));
-
+            markers.push(marker)
+            mymap.addLayer(marker)
+        })
     });
 
     let createThing = document.getElementById('createThing')
@@ -210,6 +233,9 @@ onBeforeUnmount(() => {
     window.removeEventListener('keydown', updateInteractionModifierState);
     window.removeEventListener('keyup', updateInteractionModifierState);
     window.removeEventListener('blur', resetInteractionModifierState);
+    if (mymap) {
+        mymap.off('popupopen', onPopupOpen)
+    }
 
     if (markersUnsubscribe) {
         markersUnsubscribe()
