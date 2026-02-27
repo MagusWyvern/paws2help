@@ -24,6 +24,8 @@
                 is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
             </p>
             <a href="./privacy.html">Privacy Policy</a>
+            |
+            <a href="./terms.html">Terms of Use</a>
         </div>
     </footer>
 </template>
