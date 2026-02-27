@@ -36,6 +36,7 @@ onMounted(() => {
     const coordsList = document.getElementById('coordsList')
     const reportsContainer = document.getElementById('reportsContainer')
     const reportsList = document.getElementById('reportsList')
+    const accountSections = document.getElementById('accountSections')
     const dangerZoneContainer = document.getElementById('dangerZoneContainer')
     const deleteAllListingsButton = document.getElementById('deleteAllListingsButton')
     const deleteAllReportsButton = document.getElementById('deleteAllReportsButton')
@@ -51,6 +52,7 @@ onMounted(() => {
     coordsList.innerHTML = ''
     reportsContainer.style.display = "none"
     reportsList.innerHTML = ''
+    accountSections.style.display = "none"
     dangerZoneContainer.style.display = "none"
     dangerZoneStatus.innerHTML = ''
 
@@ -238,6 +240,7 @@ onMounted(() => {
             userDetails.style.display = "block"
             coordsContainer.style.display = "block"
             reportsContainer.style.display = "block"
+            accountSections.style.display = ""
             dangerZoneContainer.style.display = "block"
 
             // Personalize userDetails section for each user
@@ -380,6 +383,7 @@ onMounted(() => {
             coordsList.innerHTML = ''
             reportsContainer.style.display = "none"
             reportsList.innerHTML = ''
+            accountSections.style.display = "none"
             dangerZoneContainer.style.display = "none"
             dangerZoneStatus.innerHTML = ''
         }
@@ -407,12 +411,12 @@ onBeforeUnmount(() => {
 
         <p class="subtitle is-6">Pet listings and stray-animal reports are available for logged-in users.</p>
 
-        <button id="signInButton" class="button is-success">Sign In with Google</button><br><br>
+        <button id="signInButton" class="button is-success">Sign In with Google</button>
     </div>
 
-    <div class="box" id="userDetails" style="display: none;"></div><br><br>
+    <div class="box" id="userDetails" style="display: none;"></div>
     
-    <section class="columns is-variable is-5 account-sections">
+    <section id="accountSections" class="columns is-variable is-5 account-sections">
         <section class="column" id="coordsContainer" style="display: none;">
             <div class="box">
                 <h1 class="title is-4">Pet Listings</h1>
@@ -445,12 +449,14 @@ onBeforeUnmount(() => {
 
 <style scoped>
 #signInNow {
-    padding-top: 2em;
+    margin: 2rem 1rem 1rem;
+    padding: 0;
     display: flex;
     align-items: center;
     align-content: center;
     flex-wrap: wrap;
     flex-direction: column;
+    text-align: center;
 }
 
 .subtitle {
@@ -464,6 +470,7 @@ onBeforeUnmount(() => {
 #userDetails {
     background-color: #85CEFF;
     padding: 1.25rem;
+    margin: 0 1rem 1rem;
 }
 
 #userDetails :deep(.account-hero) {
