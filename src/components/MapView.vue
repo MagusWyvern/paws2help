@@ -204,6 +204,35 @@ function startChatForSelectedListing() {
     }))
 }
 
+function buildListingShareUrl(listingId) {
+    return `${window.location.origin}/map?listing=${encodeURIComponent(listingId)}`
+}
+
+async function shareSelectedListing() {
+    if (!selectedListing.value?.id) {
+        return
+    }
+
+    const shareUrl = buildListingShareUrl(selectedListing.value.id)
+    try {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(shareUrl)
+            window.alert('Listing link copied to clipboard.')
+            return
+        }
+    } catch (error) {
+        console.error('Clipboard copy failed:', error)
+    }
+
+    const fallbackInput = document.createElement('input')
+    fallbackInput.value = shareUrl
+    document.body.appendChild(fallbackInput)
+    fallbackInput.select()
+    document.execCommand('copy')
+    document.body.removeChild(fallbackInput)
+    window.alert('Listing link copied to clipboard.')
+}
+
 function onPopupOpen(event) {
     const popupElement = event.popup?.getElement()
     if (!popupElement) {
@@ -444,6 +473,12 @@ onBeforeUnmount(() => {
                     @click="startChatForSelectedListing"
                 >
                     Message Owner
+                </button>
+                <button
+                    class="button is-small is-light mt-2 ml-2"
+                    @click="shareSelectedListing"
+                >
+                    Share Listing
                 </button>
             </div>
         </section>

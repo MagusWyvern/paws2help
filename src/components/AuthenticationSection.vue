@@ -10,6 +10,102 @@ let authUnsubscribe = null
 let markersUnsubscribe = null
 let reportsUnsubscribe = null
 
+function escapeHTML(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+}
+
+function formatListingType(listingData) {
+    return listingData?.donate ? 'Giving away a pet' : 'Looking for a pet'
+}
+
+function buildListingShareUrl(listingId) {
+    return `${window.location.origin}/map?listing=${encodeURIComponent(listingId)}`
+}
+
+async function copyTextToClipboard(textToCopy) {
+    if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(textToCopy)
+        return
+    }
+
+    const fallbackInput = document.createElement('input')
+    fallbackInput.value = textToCopy
+    document.body.appendChild(fallbackInput)
+    fallbackInput.select()
+    document.execCommand('copy')
+    document.body.removeChild(fallbackInput)
+}
+
+function formatListingRows(listingData) {
+    const coords = Array.isArray(listingData?.coords) && listingData.coords.length >= 2
+        ? `${Number(listingData.coords[0]).toFixed(6)}, ${Number(listingData.coords[1]).toFixed(6)}`
+        : ''
+
+    const rows = [
+        { label: 'Listing type', value: formatListingType(listingData) },
+        { label: 'Pet species/type', value: listingData?.petSpecies || '' },
+        { label: 'Name/Nickname', value: listingData?.creatorName || '' },
+        { label: 'Phone', value: listingData?.creatorPhone || '' },
+        { label: 'Contact method', value: listingData?.contactMethod || '' },
+        { label: 'Best contact time', value: listingData?.contactTime || '' },
+        { label: 'Coordinates', value: coords },
+        { label: 'Notes', value: listingData?.listingNotes || '' },
+    ]
+
+    if (listingData?.donate) {
+        rows.push(
+            { label: 'Pet age', value: listingData?.petAge || '' },
+            { label: 'Vaccination/neutered', value: listingData?.vaccinationStatus || '' },
+            { label: 'Temperament', value: listingData?.petTemperament || '' },
+            { label: 'Rehoming reason', value: listingData?.rehomingReason || '' },
+            { label: 'Adoption requirements', value: listingData?.adoptionRequirements || '' },
+        )
+    } else {
+        rows.push(
+            { label: 'Home type', value: listingData?.homeType || '' },
+            { label: 'Existing pets', value: listingData?.existingPets || '' },
+            { label: 'Preferred pet age', value: listingData?.preferredPetAge || '' },
+            { label: 'Medical/special needs', value: listingData?.canHandleMedical || '' },
+        )
+    }
+
+    return rows.filter((row) => typeof row.value === 'string' ? row.value.trim().length > 0 : Boolean(row.value))
+}
+
+function renderListingCard(listingId, listingData) {
+    const listingRowsMarkup = formatListingRows(listingData)
+        .map((row) => `<p class="listing-row"><b>${escapeHTML(row.label)}:</b> ${escapeHTML(row.value)}</p>`)
+        .join('')
+
+    const petImage = listingData?.petImage || '../assets/logo.svg'
+    const addressName = listingData?.addressName || 'Unknown address'
+    const shareUrl = buildListingShareUrl(listingId)
+
+    return `
+    <article class="box listing-item">
+        <div class="listing-item-head">
+            <img src="${escapeHTML(petImage)}" alt="Listing pet image" class="listing-item-image">
+            <div class="listing-item-meta">
+                <p class="listing-item-address">${escapeHTML(addressName)}</p>
+                <p class="listing-item-link is-size-7 has-text-grey">${escapeHTML(shareUrl)}</p>
+            </div>
+        </div>
+        <div class="listing-item-body">
+            ${listingRowsMarkup}
+        </div>
+        <div class="buttons are-small mt-3">
+            <button class="button is-light" data-action="share" data-id="${escapeHTML(listingId)}">Share</button>
+            <button class="button is-link is-light" data-action="open-map" data-id="${escapeHTML(listingId)}">Open on Map</button>
+            <button class="button is-danger is-light" data-action="delete" data-id="${escapeHTML(listingId)}">Delete</button>
+        </div>
+    </article>
+    `
+}
+
 function formatAccountCreationDate(user) {
     const creationTime = user?.metadata?.creationTime
     if (!creationTime) {
@@ -217,6 +313,49 @@ onMounted(() => {
             }
         }
     }
+    coordsList.onclick = async (event) => {
+        const actionButton = event.target.closest('button[data-action]')
+        if (!actionButton) {
+            return
+        }
+
+        const listingId = actionButton.dataset.id
+        const action = actionButton.dataset.action
+        const currentUser = getCurrentUser()
+
+        if (!currentUser || !listingId) {
+            return
+        }
+
+        if (action === 'share') {
+            const shareUrl = buildListingShareUrl(listingId)
+            try {
+                await copyTextToClipboard(shareUrl)
+                window.alert('Listing link copied to clipboard.')
+            } catch (error) {
+                console.error('Failed to share listing link:', error)
+                window.alert('Failed to copy listing link.')
+            }
+            return
+        }
+
+        if (action === 'open-map') {
+            window.location.assign(`/map?listing=${encodeURIComponent(listingId)}`)
+            return
+        }
+
+        if (action === 'delete') {
+            const shouldDelete = window.confirm('Delete this listing?')
+            if (!shouldDelete) {
+                return
+            }
+            try {
+                await deleteDoc(doc(db, 'pet-coords', listingId))
+            } catch (error) {
+                console.error('Failed to delete listing:', error)
+            }
+        }
+    }
 
     authUnsubscribe = auth.onAuthStateChanged((user) => {
         if (markersUnsubscribe) {
@@ -283,39 +422,15 @@ onMounted(() => {
 
                 querySnapshot.forEach((doc) => {
                     let currentUser = getCurrentUser()
-                    let listItemToPush
 
                     if (currentUser && doc.data().uid == currentUser.uid) {
-                        listItemToPush = `
-                        <div class="card" style="width: 75%; border-radius: 10px">
-                            <header class="card-header">
-                                <p class="card-header-title">
-                                    ${doc.data().addressName.toLocaleString()}
-                                </p>
-                                <button class="card-header-icon" aria-label="more options">
-                                    <span class="icon">
-                                        <i class="fas fa-angle-down" aria-hidden="true"></i>
-                                    </span>
-                                </button>
-                            </header>
-                            <div class="card-content">
-                                <div class="content">
-                                    <li style="list-style: none;" id="${doc.id}"><b>Latitude: </b>${doc.data().coords[0]}, <b>Longitude: </b>${doc.data().coords[1]}</li>
-                                </div>
-                            </div>
-                            <footer class="card-footer">
-                                <a href="#" class="card-footer-item">Share</a>
-                                <a href="#" class="card-footer-item">Edit</a>
-                                <a href="#" class="card-footer-item has-background-danger has-text-primary-light" id="${doc.id}" onClick="">Delete</a>
-                            </footer>
-                        </div><br><br>
-                            `
-
-                        items.push(listItemToPush)
+                        items.push(renderListingCard(doc.id, doc.data()))
                     }
                 });
 
-                coordsList.innerHTML = items.length > 0 ? items.join('') : '<p>No registered coordinates yet.</p>';
+                coordsList.innerHTML = items.length > 0
+                    ? items.join('')
+                    : '<p class="has-text-grey">No pet listings yet. Add one from the map or home page.</p>';
             })
 
             const personalReportsQuery = query(
@@ -535,6 +650,47 @@ onBeforeUnmount(() => {
 .report-item {
     margin: 0 0 1rem;
     text-align: left;
+}
+
+#coordsList :deep(.listing-item) {
+    margin: 0 0 1rem;
+    text-align: left;
+}
+
+#coordsList :deep(.listing-item-head) {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+#coordsList :deep(.listing-item-image) {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #e5e5e5;
+}
+
+#coordsList :deep(.listing-item-meta) {
+    min-width: 0;
+}
+
+#coordsList :deep(.listing-item-address) {
+    margin: 0;
+    font-weight: 700;
+}
+
+#coordsList :deep(.listing-item-link) {
+    margin: 0.15rem 0 0;
+    overflow-wrap: anywhere;
+}
+
+#coordsList :deep(.listing-item-body) {
+    margin-top: 0.7rem;
+}
+
+#coordsList :deep(.listing-row) {
+    margin: 0.15rem 0;
 }
 
 .account-sections {
