@@ -2,14 +2,17 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import 'leaflet.markercluster/dist/leaflet.markercluster.js';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { query, collection, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from '../firebase';
 import { getCurrentUser } from '../authenticateUser';
 import { donatingCatIcon, receivingCatIcon } from './icons/LeafletIcon'
+import { useRoute, useRouter } from 'vue-router';
 
 let mymap
 let markers = []
+const markerByListingId = new Map()
+const listingById = new Map()
 
 var popup = L.popup();
 const mapInteractionEnabled = ref(false);
@@ -17,6 +20,55 @@ let markersUnsubscribe = null;
 let authUnsubscribe = null;
 const interactionKeyLabel = ref('Ctrl');
 const isLoggedIn = ref(Boolean(getCurrentUser()));
+const selectedListing = ref(null)
+const route = useRoute()
+const router = useRouter()
+
+const selectedListingRows = computed(() => {
+    if (!selectedListing.value) {
+        return []
+    }
+
+    const listing = selectedListing.value
+    const rows = [
+        { label: 'Listing Type', value: listing.donate ? 'Giving away a pet' : 'Looking for a pet' },
+        { label: 'Pet species/type', value: listing.petSpecies },
+        { label: 'Name/Nickname', value: listing.creatorName },
+        { label: 'Phone Number', value: listing.creatorPhone },
+        { label: 'Address', value: listing.addressName },
+        { label: 'Preferred contact method', value: listing.contactMethod },
+        { label: 'Best time to contact', value: listing.contactTime },
+        { label: 'Additional notes', value: listing.listingNotes },
+        { label: 'Coordinates', value: `${listing.coords[0].toFixed(6)}, ${listing.coords[1].toFixed(6)}` },
+    ]
+
+    if (listing.donate) {
+        rows.push(
+            { label: 'Pet age', value: listing.petAge },
+            { label: 'Vaccination / neutered status', value: listing.vaccinationStatus },
+            { label: 'Pet temperament', value: listing.petTemperament },
+            { label: 'Reason for rehoming', value: listing.rehomingReason },
+            { label: 'Adoption requirements', value: listing.adoptionRequirements },
+        )
+    } else {
+        rows.push(
+            { label: 'Home type', value: listing.homeType },
+            { label: 'Existing pets at home', value: listing.existingPets },
+            { label: 'Preferred pet age', value: listing.preferredPetAge },
+            { label: 'Can handle medical costs / special needs', value: listing.canHandleMedical },
+        )
+    }
+
+    return rows.filter((row) => typeof row.value === 'string' ? row.value.trim().length > 0 : Boolean(row.value))
+})
+
+const canMessageSelectedOwner = computed(() => {
+    const currentUser = getCurrentUser()
+    if (!currentUser || !selectedListing.value?.ownerUid) {
+        return false
+    }
+    return currentUser.uid !== selectedListing.value.ownerUid
+})
 
 function onMapClick(e) {
     popup
@@ -53,6 +105,103 @@ function escapeHTML(value) {
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
+}
+
+function buildListingPayload(listingDoc, listing) {
+    const coords = Array.isArray(listing.coords) ? listing.coords : null
+    if (!coords || coords.length < 2) {
+        return null
+    }
+
+    return {
+        id: listingDoc.id,
+        coords: [Number(coords[0]), Number(coords[1])],
+        donate: Boolean(listing.donate),
+        petImage: listing.petImage || "../assets/logo.svg",
+        creatorName: listing.creatorName || "Anonymous",
+        creatorPhone: listing.creatorPhone || "No phone number provided",
+        ownerUid: listing.uid || '',
+        addressName: listing.addressName || 'Unknown address',
+        petSpecies: listing.petSpecies || '',
+        contactMethod: listing.contactMethod || '',
+        contactTime: listing.contactTime || '',
+        listingNotes: listing.listingNotes || '',
+        petAge: listing.petAge || '',
+        vaccinationStatus: listing.vaccinationStatus || '',
+        petTemperament: listing.petTemperament || '',
+        rehomingReason: listing.rehomingReason || '',
+        adoptionRequirements: listing.adoptionRequirements || '',
+        homeType: listing.homeType || '',
+        existingPets: listing.existingPets || '',
+        preferredPetAge: listing.preferredPetAge || '',
+        canHandleMedical: listing.canHandleMedical || '',
+    }
+}
+
+function syncSelectedListingFromRoute() {
+    if (route.path !== '/map') {
+        return
+    }
+
+    const listingId = typeof route.query.listing === 'string' ? route.query.listing : ''
+    if (!listingId) {
+        selectedListing.value = null
+        return
+    }
+
+    const listingToSelect = listingById.get(listingId)
+    if (!listingToSelect) {
+        return
+    }
+
+    selectedListing.value = listingToSelect
+    const marker = markerByListingId.get(listingId)
+    if (marker) {
+        marker.openPopup()
+    }
+}
+
+function onListingMarkerClick(listingPayload) {
+    if (route.path !== '/map') {
+        router.push({
+            path: '/map',
+            query: { listing: listingPayload.id },
+        })
+        return
+    }
+
+    selectedListing.value = listingPayload
+    if (route.query.listing !== listingPayload.id) {
+        router.replace({
+            path: '/map',
+            query: { ...route.query, listing: listingPayload.id },
+        })
+    }
+}
+
+function startChatForSelectedListing() {
+    if (!selectedListing.value) {
+        return
+    }
+
+    const currentUser = getCurrentUser()
+    if (!currentUser) {
+        window.alert('Sign in to start a chat.')
+        return
+    }
+
+    if (!selectedListing.value.ownerUid || selectedListing.value.ownerUid === currentUser.uid) {
+        return
+    }
+
+    window.dispatchEvent(new CustomEvent('p2h:start-chat', {
+        detail: {
+            listingId: selectedListing.value.id,
+            listingAddress: selectedListing.value.addressName,
+            listingOwnerUid: selectedListing.value.ownerUid,
+            listingOwnerName: selectedListing.value.creatorName || 'Pet owner',
+        },
+    }))
 }
 
 function onPopupOpen(event) {
@@ -112,19 +261,17 @@ onMounted(() => {
             mymap.removeLayer(marker)
         })
         markers = []
+        markerByListingId.clear()
+        listingById.clear()
 
         querySnapshot.forEach((listingDoc) => {
             const listing = listingDoc.data()
-            const coords = Array.isArray(listing.coords) ? listing.coords : null
-            if (!coords || coords.length < 2) {
+            const listingPayload = buildListingPayload(listingDoc, listing)
+            if (!listingPayload) {
                 return
             }
-
-            const petImage = listing.petImage || "../assets/logo.svg"
-            const creatorName = listing.creatorName || "Anonymous"
-            const creatorPhone = listing.creatorPhone || "No phone number provided"
-            const ownerUid = listing.uid || ''
-            const addressName = listing.addressName || 'Unknown address'
+            const { id, coords, petImage, creatorName, creatorPhone, ownerUid, addressName } = listingPayload
+            listingById.set(id, listingPayload)
             const currentUser = getCurrentUser()
             const canStartChat = Boolean(
                 currentUser &&
@@ -132,13 +279,13 @@ onMounted(() => {
                 currentUser.uid !== ownerUid
             )
 
-            const chosenIcon = listing.donate ? donatingCatIcon : receivingCatIcon
+            const chosenIcon = listingPayload.donate ? donatingCatIcon : receivingCatIcon
 
             const chatButtonMarkup = canStartChat
                 ? `
                 <button
                     class="button is-small is-link mt-2 start-chat-button"
-                    data-listing-id="${escapeHTML(listingDoc.id)}"
+                    data-listing-id="${escapeHTML(id)}"
                     data-owner-uid="${escapeHTML(ownerUid)}"
                     data-listing-owner-name="${escapeHTML(creatorName)}"
                     data-listing-address="${escapeHTML(addressName)}"
@@ -150,7 +297,7 @@ onMounted(() => {
 
             const marker = new L.marker([coords[0], coords[1]], { icon: chosenIcon }).bindPopup(`
                 <div>
-                    <p>${listing.donate ? 'I am donating' : 'I am looking for'} cats!</p>
+                    <p>${listingPayload.donate ? 'I am giving away a pet' : 'I am looking for a pet'}.</p>
                     <p><b>Address:</b> ${escapeHTML(addressName)}</p>
                     <p><b>Name:</b> ${escapeHTML(creatorName)}</p>
                     <p><b>Phone Number:</b> ${escapeHTML(creatorPhone)}</p>
@@ -158,10 +305,21 @@ onMounted(() => {
                     ${chatButtonMarkup}
                 </div>
             `)
+            marker.on('click', () => onListingMarkerClick(listingPayload))
 
             markers.push(marker)
+            markerByListingId.set(id, marker)
             mymap.addLayer(marker)
         })
+
+        const selectedId = selectedListing.value?.id
+        if (selectedId && listingById.has(selectedId)) {
+            selectedListing.value = listingById.get(selectedId)
+        } else if (selectedId) {
+            selectedListing.value = null
+        }
+
+        syncSelectedListingFromRoute()
     });
 
     const submitStrayReport = document.getElementById('submitStrayReport')
@@ -212,6 +370,10 @@ onMounted(() => {
 
 })
 
+watch(() => route.query.listing, () => {
+    syncSelectedListingFromRoute()
+})
+
 onBeforeUnmount(() => {
     window.removeEventListener('keydown', updateInteractionModifierState);
     window.removeEventListener('keyup', updateInteractionModifierState);
@@ -249,6 +411,42 @@ onBeforeUnmount(() => {
                 @click.prevent.stop
             />
         </div>
+
+        <section class="box report-box">
+            <h3 class="title is-5">Selected Listing Details</h3>
+            <p v-if="!selectedListing" class="is-size-7">
+                Click a listing marker to open its full details here.
+            </p>
+
+            <div v-else>
+                <div class="selected-listing-header">
+                    <img
+                        :src="selectedListing.petImage"
+                        alt="Selected listing pet image"
+                        class="selected-listing-image"
+                    >
+                    <div>
+                        <p class="is-size-6 has-text-weight-semibold">{{ selectedListing.creatorName }}</p>
+                        <p class="is-size-7">{{ selectedListing.addressName }}</p>
+                    </div>
+                </div>
+
+                <div class="selected-listing-grid">
+                    <div v-for="row in selectedListingRows" :key="row.label" class="selected-listing-row">
+                        <p class="selected-listing-label">{{ row.label }}</p>
+                        <p class="selected-listing-value">{{ row.value }}</p>
+                    </div>
+                </div>
+
+                <button
+                    v-if="canMessageSelectedOwner"
+                    class="button is-link is-small mt-2"
+                    @click="startChatForSelectedListing"
+                >
+                    Message Owner
+                </button>
+            </div>
+        </section>
 
         <section class="box report-box">
             <h3 class="title is-5">Report Stray Animals</h3>
@@ -345,5 +543,45 @@ onBeforeUnmount(() => {
 
 .report-box {
     margin: 0 5vh 3vh;
+}
+
+.selected-listing-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.selected-listing-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.selected-listing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+}
+
+.selected-listing-row {
+    padding: 0.65rem;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.selected-listing-label {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #666;
+}
+
+.selected-listing-value {
+    margin: 0.2rem 0 0;
+    font-size: 0.93rem;
+    color: #1f1f1f;
+    word-break: break-word;
 }
 </style>
