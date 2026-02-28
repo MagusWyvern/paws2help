@@ -14,7 +14,6 @@ let markers = []
 const markerByListingId = new Map()
 const listingById = new Map()
 
-var popup = L.popup();
 const mapInteractionEnabled = ref(false);
 let markersUnsubscribe = null;
 let authUnsubscribe = null;
@@ -70,13 +69,6 @@ const canMessageSelectedOwner = computed(() => {
     return currentUser.uid !== selectedListing.value.ownerUid
 })
 
-function onMapClick(e) {
-    popup
-        .setLatLng(e.latlng)
-        .setContent("You clicked the map at " + e.latlng.toString())
-        .openOn(mymap);
-}
-
 function initializeMap() {
     mymap = L.map('main_map', {
         zoomControl: true,
@@ -87,8 +79,6 @@ function initializeMap() {
         maxZoom: 19,
     }).addTo(mymap);
 
-    // Register the function so that it activates when the user clicks on the map
-    mymap.on('click', onMapClick);
 }
 
 function updateInteractionModifierState(event) {
@@ -326,11 +316,12 @@ onMounted(() => {
 
             const marker = new L.marker([coords[0], coords[1]], { icon: chosenIcon }).bindPopup(`
                 <div>
-                    <p>${listingPayload.donate ? 'I am giving away a pet' : 'I am looking for a pet'}.</p>
-                    <p><b>Address:</b> ${escapeHTML(addressName)}</p>
-                    <p><b>Name:</b> ${escapeHTML(creatorName)}</p>
-                    <p><b>Phone Number:</b> ${escapeHTML(creatorPhone)}</p>
-                    <img src="${escapeHTML(petImage)}" alt="Pet image" style="width: 84px; height: 84px; border-radius: 50%">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <img src="${escapeHTML(petImage)}" alt="Pet image" style="width: 42px; height: 42px; border-radius: 50%">
+                        <p style="margin: 0;"><b>${listingPayload.donate ? 'Giving away a pet' : 'Looking for a pet'}</b></p>
+                    </div>
+                    <p>${escapeHTML(addressName)}</p>
+                    <p>${escapeHTML(creatorName)} • ${escapeHTML(creatorPhone)}</p>
                     ${chatButtonMarkup}
                 </div>
             `)
