@@ -29,6 +29,13 @@ const selectedListingRows = computed(() => {
     }
 
     const listing = selectedListing.value
+    if (!isLoggedIn.value) {
+        return [
+            { label: 'Listing Type', value: listing.donate ? 'Giving away a pet' : 'Looking for a pet' },
+            { label: 'Address', value: listing.addressName },
+        ].filter((row) => typeof row.value === 'string' ? row.value.trim().length > 0 : Boolean(row.value))
+    }
+
     const rows = [
         { label: 'Listing Type', value: listing.donate ? 'Giving away a pet' : 'Looking for a pet' },
         { label: 'Pet species/type', value: listing.petSpecies },
@@ -68,6 +75,12 @@ const canMessageSelectedOwner = computed(() => {
     }
     return currentUser.uid !== selectedListing.value.ownerUid
 })
+
+const selectedListingIntentLabel = computed(() =>
+    selectedListing.value
+        ? (selectedListing.value.donate ? 'Giving away a pet' : 'Looking for a pet')
+        : ''
+)
 
 function initializeMap() {
     mymap = L.map('main_map', {
@@ -313,6 +326,12 @@ onMounted(() => {
                 </button>
                 `
                 : ''
+            const contactMarkup = isLoggedIn.value
+                ? `<p>${escapeHTML(creatorName)} • ${escapeHTML(creatorPhone)}</p>`
+                : ''
+            const loginHintMarkup = isLoggedIn.value
+                ? ''
+                : '<p class="is-size-7 has-text-grey">Sign in to view full listing details.</p>'
 
             const marker = new L.marker([coords[0], coords[1]], { icon: chosenIcon }).bindPopup(`
                 <div>
@@ -321,7 +340,8 @@ onMounted(() => {
                         <p style="margin: 0;"><b>${listingPayload.donate ? 'Giving away a pet' : 'Looking for a pet'}</b></p>
                     </div>
                     <p>${escapeHTML(addressName)}</p>
-                    <p>${escapeHTML(creatorName)} • ${escapeHTML(creatorPhone)}</p>
+                    ${contactMarkup}
+                    ${loginHintMarkup}
                     ${chatButtonMarkup}
                 </div>
             `)
@@ -446,7 +466,7 @@ onBeforeUnmount(() => {
                         class="selected-listing-image"
                     >
                     <div>
-                        <p class="is-size-6 has-text-weight-semibold">{{ selectedListing.creatorName }}</p>
+                        <p class="is-size-6 has-text-weight-semibold">{{ selectedListingIntentLabel }}</p>
                         <p class="is-size-7">{{ selectedListing.addressName }}</p>
                     </div>
                 </div>
@@ -457,6 +477,9 @@ onBeforeUnmount(() => {
                         <p class="selected-listing-value">{{ row.value }}</p>
                     </div>
                 </div>
+                <p v-if="!isLoggedIn" class="is-size-7 has-text-grey mt-2">
+                    Sign in to view full listing details.
+                </p>
 
                 <button
                     v-if="canMessageSelectedOwner"
@@ -466,6 +489,7 @@ onBeforeUnmount(() => {
                     Message Owner
                 </button>
                 <button
+                    v-if="isLoggedIn"
                     class="button is-small is-light mt-2 ml-2"
                     @click="shareSelectedListing"
                 >
