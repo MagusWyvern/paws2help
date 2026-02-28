@@ -15,6 +15,18 @@ function generateId(len) {
     return Array.from(arr, dec2hex).join('')
 }
 
+function readValueById(id) {
+    const element = document.getElementById(id)
+    return typeof element?.value === 'string' ? element.value.trim() : ''
+}
+
+function clearValueById(id) {
+    const element = document.getElementById(id)
+    if (element && 'value' in element) {
+        element.value = ''
+    }
+}
+
 export async function addPetCoords(latitudeToFetch, longitudeToFetch, userUID) {
 
     let url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitudeToFetch}&lon=${longitudeToFetch}&zoom=18&addressdetails=1`;
@@ -29,23 +41,68 @@ export async function addPetCoords(latitudeToFetch, longitudeToFetch, userUID) {
 
     console.info('Address: ' + addressDisplayName);
 
+    const listingIntent = readValueById('listingIntent')
+    const isDonating = listingIntent === 'give'
+    const creatorName = readValueById('creatorName')
+    const creatorPhone = readValueById('creatorPhone')
+    const petImage = readValueById('petImage')
+    const petSpecies = readValueById('petSpecies')
+    const contactMethod = readValueById('contactMethod')
+    const contactTime = readValueById('contactTime')
+    const listingNotes = readValueById('listingNotes')
+    const petAge = readValueById('petAge')
+    const vaccinationStatus = readValueById('vaccinationStatus')
+    const petTemperament = readValueById('petTemperament')
+    const rehomingReason = readValueById('rehomingReason')
+    const adoptionRequirements = readValueById('adoptionRequirements')
+    const homeType = readValueById('homeType')
+    const existingPets = readValueById('existingPets')
+    const preferredPetAge = readValueById('preferredPetAge')
+    const canHandleMedical = readValueById('canHandleMedical')
+
     // Create a new document at the Firestore collection with the inputted data
     await setDoc(doc(db, "pet-coords", generatedUID), {
         buttonDocID: generatedUID,
         coords: [latitudeToFetch, longitudeToFetch],
         uid: userUID,
-        donate: document.getElementById('donate').checked,
+        donate: isDonating,
+        listingIntent,
         createdAt: serverTimestamp(),
         addressName: addressDisplayName,
-        creatorName: document.getElementById('creatorName').value,
-        creatorPhone: document.getElementById('creatorPhone').value,
-        petImage: document.getElementById('petImage').value,
+        creatorName,
+        creatorPhone,
+        petImage,
+        petSpecies,
+        contactMethod,
+        contactTime,
+        listingNotes,
+        petAge,
+        vaccinationStatus,
+        petTemperament,
+        rehomingReason,
+        adoptionRequirements,
+        homeType,
+        existingPets,
+        preferredPetAge,
+        canHandleMedical,
     });
 
     // Clear the form
 
-    document.getElementById('creatorName').value = '';
-    document.getElementById('creatorPhone').value = '';
-    document.getElementById('petImage').value = '';
-    document.getElementById('donate').checked = false;
+    clearValueById('creatorName')
+    clearValueById('creatorPhone')
+    clearValueById('petImage')
+    clearValueById('petSpecies')
+    clearValueById('contactMethod')
+    clearValueById('contactTime')
+    clearValueById('listingNotes')
+    clearValueById('petAge')
+    clearValueById('vaccinationStatus')
+    clearValueById('petTemperament')
+    clearValueById('rehomingReason')
+    clearValueById('adoptionRequirements')
+    clearValueById('homeType')
+    clearValueById('existingPets')
+    clearValueById('preferredPetAge')
+    clearValueById('canHandleMedical')
 }

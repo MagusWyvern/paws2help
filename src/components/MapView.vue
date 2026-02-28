@@ -7,7 +7,6 @@ import { query, collection, onSnapshot, addDoc, serverTimestamp } from "firebase
 import { auth, db } from '../firebase';
 import { getCurrentUser } from '../authenticateUser';
 import { donatingCatIcon, receivingCatIcon } from './icons/LeafletIcon'
-import { addPetCoords } from '../addPetCoords'
 
 let mymap
 let markers = []
@@ -164,22 +163,6 @@ onMounted(() => {
             mymap.addLayer(marker)
         })
     });
-
-    let createThing = document.getElementById('createThing')
-
-    if (createThing) {
-        createThing.onclick = () => {
-            const currentUser = getCurrentUser()
-
-            if (!currentUser) {
-                console.warn('Cannot create listing because no authenticated user is available.')
-                return
-            }
-
-            addPetCoords(mymap.getCenter().lat, mymap.getCenter().lng, currentUser.uid);
-
-        }
-    }
 
     const submitStrayReport = document.getElementById('submitStrayReport')
     const reportAnimalType = document.getElementById('reportAnimalType')
