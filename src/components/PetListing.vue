@@ -5,6 +5,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { auth } from '../firebase'
 import { addPetCoords } from '../addPetCoords'
+import { reverseGeocode } from '../reverseGeocode'
 
 const DEFAULT_PICKER_CENTER = [4.225128, 102.249195]
 
@@ -116,9 +117,8 @@ async function updateAddressPreview(latitude, longitude) {
     selectedAddressPreview.value = 'Resolving address preview...'
 
     try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`)
-        const data = await response.json()
-        selectedAddressPreview.value = data?.display_name || 'Address preview unavailable for this location.'
+        const address = await reverseGeocode(latitude, longitude)
+        selectedAddressPreview.value = address || 'Address preview unavailable for this location.'
     } catch (error) {
         console.error('Failed to fetch address preview:', error)
         selectedAddressPreview.value = 'Failed to load address preview. You can still submit with coordinates.'

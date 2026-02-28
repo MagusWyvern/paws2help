@@ -1,5 +1,6 @@
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
+import { reverseGeocode } from "./reverseGeocode";
 
 // Unique Document UID Generator
 // dec2hex :: Integer -> String
@@ -28,16 +29,8 @@ function clearValueById(id) {
 }
 
 export async function addPetCoords(latitudeToFetch, longitudeToFetch, userUID) {
-
-    let url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitudeToFetch}&lon=${longitudeToFetch}&zoom=18&addressdetails=1`;
-
-    // Logging: Logs the URL to fetch from nominatim
-    // console.info('URL to fetch: ' + url);
-
-    let addressDisplayName
     let generatedUID = generateId(20)
-
-    await fetch(url).then(response => response.json()).then(data => { addressDisplayName = data.display_name });
+    const addressDisplayName = await reverseGeocode(latitudeToFetch, longitudeToFetch)
 
     console.info('Address: ' + addressDisplayName);
 
