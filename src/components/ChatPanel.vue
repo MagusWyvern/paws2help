@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   onSnapshot,
@@ -28,6 +29,9 @@ const messagesReady = ref(false)
 const selectedConversationMeta = ref(null)
 const lastStartedFromRouteKey = ref('')
 const lastSentAtByConversation = ref({})
+const isSelectedPeerBlockedByMe = ref(false)
+const isSelectedPeerBlockingMe = ref(false)
+const blockStateReady = ref(false)
 const route = useRoute()
 const router = useRouter()
 
@@ -64,6 +68,9 @@ function resetChatState() {
   conversationsReady.value = false
   messagesReady.value = false
   lastSentAtByConversation.value = {}
+  isSelectedPeerBlockedByMe.value = false
+  isSelectedPeerBlockingMe.value = false
+  blockStateReady.value = false
 }
 
 function stopConversationsListener() {
@@ -232,6 +239,16 @@ async function sendMessage() {
     return
   }
 
+  if (isSelectedPeerBlockedByMe.value) {
+    statusText.value = 'Unblock this user before sending messages.'
+    return
+  }
+
+  if (isSelectedPeerBlockingMe.value) {
+    statusText.value = 'This user blocked you. You cannot send messages.'
+    return
+  }
+
   const lastSentAt = lastSentAtByConversation.value[selectedConversationId.value] || 0
   if (Date.now() - lastSentAt < 3000) {
     statusText.value = 'Please wait a few seconds before sending another message.'
@@ -282,6 +299,79 @@ function handleStartChat(event) {
     console.error('Failed to initialize conversation:', error)
     statusText.value = 'Failed to start chat.'
   })
+}
+
+const currentUid = computed(() => getCurrentUser()?.uid || '')
+const selectedPeerUid = computed(() => {
+  if (!selectedConversationMeta.value || !currentUid.value) {
+    return ''
+  }
+
+  const participantIds = Array.isArray(selectedConversationMeta.value.participantIds)
+    ? selectedConversationMeta.value.participantIds
+    : []
+  return participantIds.find((participantUid) => participantUid !== currentUid.value) || ''
+})
+
+const chatLockedByBlock = computed(() =>
+  isSelectedPeerBlockedByMe.value || isSelectedPeerBlockingMe.value
+)
+
+const blockActionLabel = computed(() =>
+  isSelectedPeerBlockedByMe.value ? 'Unblock User' : 'Block User'
+)
+
+async function refreshBlockState() {
+  const currentUser = getCurrentUser()
+  if (!currentUser || !selectedPeerUid.value) {
+    isSelectedPeerBlockedByMe.value = false
+    isSelectedPeerBlockingMe.value = false
+    blockStateReady.value = true
+    return
+  }
+
+  blockStateReady.value = false
+  try {
+    const [blockedByMeSnapshot, blockedMeSnapshot] = await Promise.all([
+      getDoc(doc(db, 'users', currentUser.uid, 'chat-blocks', selectedPeerUid.value)),
+      getDoc(doc(db, 'users', selectedPeerUid.value, 'chat-blocks', currentUser.uid)),
+    ])
+
+    isSelectedPeerBlockedByMe.value = blockedByMeSnapshot.exists()
+    isSelectedPeerBlockingMe.value = blockedMeSnapshot.exists()
+  } catch (error) {
+    console.error('Failed to load block status:', error)
+    statusText.value = 'Failed to load chat safety status.'
+    isSelectedPeerBlockedByMe.value = false
+    isSelectedPeerBlockingMe.value = false
+  } finally {
+    blockStateReady.value = true
+  }
+}
+
+async function toggleSelectedPeerBlock() {
+  const currentUser = getCurrentUser()
+  if (!currentUser || !selectedPeerUid.value) {
+    return
+  }
+
+  try {
+    if (isSelectedPeerBlockedByMe.value) {
+      await deleteDoc(doc(db, 'users', currentUser.uid, 'chat-blocks', selectedPeerUid.value))
+      statusText.value = 'User unblocked.'
+    } else {
+      await setDoc(doc(db, 'users', currentUser.uid, 'chat-blocks', selectedPeerUid.value), {
+        blockedUid: selectedPeerUid.value,
+        createdAt: serverTimestamp(),
+      })
+      statusText.value = 'User blocked. You will not be able to send messages in this chat.'
+    }
+  } catch (error) {
+    console.error('Failed to update block status:', error)
+    statusText.value = 'Failed to update block status.'
+  }
+
+  await refreshBlockState()
 }
 
 function readStartPayloadFromRoute() {
@@ -359,6 +449,17 @@ watch(
   { deep: true }
 )
 
+watch(
+  [selectedConversationId, selectedPeerUid, currentUid],
+  () => {
+    refreshBlockState().catch((error) => {
+      console.error('Failed to refresh block status:', error)
+      statusText.value = 'Failed to load chat safety status.'
+    })
+  },
+  { immediate: true }
+)
+
 onBeforeUnmount(() => {
   window.removeEventListener('p2h:start-chat', handleStartChat)
   stopMessagesListener()
@@ -367,8 +468,6 @@ onBeforeUnmount(() => {
     authUnsubscribe()
   }
 })
-
-const currentUid = computed(() => getCurrentUser()?.uid || '')
 </script>
 
 <template>
@@ -407,6 +506,21 @@ const currentUid = computed(() => getCurrentUser()?.uid || '')
               : 'Select a conversation'
           }}
         </h4>
+        <div v-if="selectedConversationId && selectedPeerUid" class="chat-action-row">
+          <button
+            class="button is-small is-light"
+            :disabled="!blockStateReady"
+            @click="toggleSelectedPeerBlock"
+          >
+            {{ blockActionLabel }}
+          </button>
+          <p v-if="isSelectedPeerBlockingMe" class="is-size-7 chat-block-warning">
+            This user blocked you. Sending is disabled.
+          </p>
+          <p v-else-if="isSelectedPeerBlockedByMe" class="is-size-7 chat-block-warning">
+            You blocked this user. Sending is disabled.
+          </p>
+        </div>
 
         <div class="chat-messages">
           <p v-if="selectedConversationId && !messagesReady" class="is-size-7">Loading messages...</p>
@@ -433,14 +547,14 @@ const currentUid = computed(() => getCurrentUser()?.uid || '')
               class="textarea"
               rows="3"
               placeholder="Type your message"
-              :disabled="!selectedConversationId"
+              :disabled="!selectedConversationId || chatLockedByBlock"
             />
           </div>
         </div>
 
         <button
           class="button is-primary"
-          :disabled="!selectedConversationId || !draftMessage.trim()"
+          :disabled="!selectedConversationId || !draftMessage.trim() || chatLockedByBlock"
           @click="sendMessage"
         >
           Send Message
@@ -496,6 +610,17 @@ const currentUid = computed(() => getCurrentUser()?.uid || '')
 .chat-main {
   display: flex;
   flex-direction: column;
+}
+
+.chat-action-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.chat-block-warning {
+  color: #8f2a2a;
 }
 
 .chat-messages {

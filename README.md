@@ -10,7 +10,7 @@ The primary goal for this web app is to allow pet owners to list their pets up f
   - Start chat from a map marker popup ("Message Owner")
   - Real-time conversation panel for signed-in users
   - Firestore security rules to restrict chat access to conversation participants
-- [ ] Chat moderation (report/block user, anti-spam controls)
+- [x] Chat moderation (block user and anti-spam controls)
 - [ ] Push notifications for new chat messages
 
 ## Build Pipeline

@@ -18,6 +18,32 @@ service cloud.firestore {
         && request.auth.uid in data.participantIds;
     }
 
+    function hasTwoParticipants(data) {
+      return data.keys().hasAll(['participantIds'])
+        && data.participantIds is list
+        && data.participantIds.size() == 2
+        && data.participantIds[0] is string
+        && data.participantIds[1] is string
+        && data.participantIds[0] != data.participantIds[1];
+    }
+
+    function conversationPeerUid(data) {
+      return data.participantIds[0] == request.auth.uid
+        ? data.participantIds[1]
+        : data.participantIds[0];
+    }
+
+    function isBlocked(blockerUid, blockedUid) {
+      return exists(/databases/$(database)/documents/users/$(blockerUid)/chat-blocks/$(blockedUid));
+    }
+
+    function canExchangeMessages(data) {
+      return isConversationParticipant(data)
+        && hasTwoParticipants(data)
+        && !isBlocked(request.auth.uid, conversationPeerUid(data))
+        && !isBlocked(conversationPeerUid(data), request.auth.uid);
+    }
+
     match /pet-coords/{docId} {
       allow read: if true;
       allow create: if isSignedIn()
@@ -29,6 +55,27 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.resource.data.uid == request.auth.uid;
       allow read, update, delete: if isOwner(resource.data);
+    }
+
+    match /users/{uid}/chat-blocks/{blockedUid} {
+      allow read, delete: if isSignedIn() && request.auth.uid == uid;
+
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && blockedUid is string
+        && blockedUid != uid
+        && request.resource.data.keys().hasAll([
+          'blockedUid',
+          'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'blockedUid',
+          'createdAt'
+        ])
+        && request.resource.data.blockedUid == blockedUid
+        && request.resource.data.createdAt is timestamp;
+
+      allow update: if false;
     }
 
     match /conversations/{conversationId} {
@@ -64,6 +111,8 @@ service cloud.firestore {
         && request.resource.data.participantIds[0] != request.resource.data.participantIds[1]
         && request.auth.uid in request.resource.data.participantIds
         && request.resource.data.listingOwnerUid in request.resource.data.participantIds
+        && !isBlocked(request.auth.uid, request.resource.data.listingOwnerUid)
+        && !isBlocked(request.resource.data.listingOwnerUid, request.auth.uid)
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.listingId is string
         && request.resource.data.listingAddress is string
@@ -75,7 +124,7 @@ service cloud.firestore {
 
       allow read: if isConversationParticipant(resource.data);
 
-      allow update: if isConversationParticipant(resource.data)
+      allow update: if canExchangeMessages(resource.data)
         && request.resource.data.keys().hasOnly([
           'listingId',
           'listingAddress',
@@ -111,6 +160,9 @@ service cloud.firestore {
       );
 
       allow create: if isConversationParticipant(
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data
+        )
+        && canExchangeMessages(
           get(/databases/$(database)/documents/conversations/$(conversationId)).data
         )
         && request.resource.data.keys().hasAll([
