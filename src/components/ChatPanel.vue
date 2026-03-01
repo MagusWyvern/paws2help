@@ -32,12 +32,17 @@ const lastSentAtByConversation = ref({})
 const isSelectedPeerBlockedByMe = ref(false)
 const isSelectedPeerBlockingMe = ref(false)
 const blockStateReady = ref(false)
+const authReadyForFirestore = ref(false)
+const hasRetriedConversationStreamAfterAuthRefresh = ref(false)
 const route = useRoute()
 const router = useRouter()
 
 let authUnsubscribe = null
-let conversationsUnsubscribe = null
+let createdByConversationsUnsubscribe = null
+let ownerConversationsUnsubscribe = null
 let messagesUnsubscribe = null
+let createdByConversationsCache = []
+let ownerConversationsCache = []
 
 function buildConversationId(listingId, uidOne, uidTwo) {
   const sortedParticipants = [uidOne, uidTwo].sort()
@@ -74,9 +79,13 @@ function resetChatState() {
 }
 
 function stopConversationsListener() {
-  if (conversationsUnsubscribe) {
-    conversationsUnsubscribe()
-    conversationsUnsubscribe = null
+  if (createdByConversationsUnsubscribe) {
+    createdByConversationsUnsubscribe()
+    createdByConversationsUnsubscribe = null
+  }
+  if (ownerConversationsUnsubscribe) {
+    ownerConversationsUnsubscribe()
+    ownerConversationsUnsubscribe = null
   }
 }
 
@@ -87,60 +96,149 @@ function stopMessagesListener() {
   }
 }
 
+function normalizeConversation(conversationDoc) {
+  const conversation = conversationDoc.data()
+  return {
+    id: conversationDoc.id,
+    listingId: conversation.listingId || '',
+    listingAddress: conversation.listingAddress || 'Listing',
+    listingOwnerName: conversation.listingOwnerName || 'Pet owner',
+    listingOwnerUid: conversation.listingOwnerUid || '',
+    participantIds: Array.isArray(conversation.participantIds) ? conversation.participantIds : [],
+    createdBy: conversation.createdBy || '',
+    updatedAt: conversation.updatedAt || null,
+    updatedAtLabel: formatDate(conversation.updatedAt),
+    lastMessageText: conversation.lastMessageText || '',
+  }
+}
+
+function applyMergedConversations() {
+  const mergedById = new Map()
+  createdByConversationsCache.forEach((conversation) => {
+    mergedById.set(conversation.id, conversation)
+  })
+  ownerConversationsCache.forEach((conversation) => {
+    mergedById.set(conversation.id, conversation)
+  })
+
+  const currentConversations = [...mergedById.values()]
+    .sort((a, b) => {
+      const aMs = a.updatedAt?.toMillis ? a.updatedAt.toMillis() : 0
+      const bMs = b.updatedAt?.toMillis ? b.updatedAt.toMillis() : 0
+      return bMs - aMs
+    })
+
+  conversations.value = currentConversations
+  conversationsReady.value = true
+
+  if (!currentConversations.length) {
+    stopMessagesListener()
+    messages.value = []
+    selectedConversationId.value = ''
+    selectedConversationMeta.value = null
+    return
+  }
+
+  if (!selectedConversationId.value) {
+    selectConversation(currentConversations[0])
+    return
+  }
+
+  const stillSelected = currentConversations.find((entry) => entry.id === selectedConversationId.value)
+  if (!stillSelected) {
+    selectConversation(currentConversations[0])
+    return
+  }
+
+  selectedConversationMeta.value = stillSelected
+}
+
+function handleConversationStreamError(error) {
+    console.error('Failed to stream conversations:', error)
+    console.debug('[ChatPanel] Conversation stream error details', {
+      code: error?.code || null,
+      message: error?.message || null,
+      authUid: auth.currentUser?.uid || null,
+      selectedConversationId: selectedConversationId.value || null,
+    })
+    if (error?.code === 'permission-denied' && !hasRetriedConversationStreamAfterAuthRefresh.value) {
+      hasRetriedConversationStreamAfterAuthRefresh.value = true
+      const currentUser = getCurrentUser()
+      if (currentUser) {
+        currentUser.getIdToken(true)
+          .then(() => {
+            if (auth.currentUser?.uid === currentUser.uid) {
+              subscribeToConversations(currentUser.uid)
+            }
+          })
+          .catch((refreshError) => {
+            console.error('Failed to refresh auth token for conversation stream retry:', refreshError)
+          })
+      }
+    }
+    statusText.value = 'Failed to load conversations.'
+    conversationsReady.value = true
+}
+
 function subscribeToConversations(uid) {
   stopConversationsListener()
   conversationsReady.value = false
-  const conversationsQuery = query(
+  createdByConversationsCache = []
+  ownerConversationsCache = []
+
+  const createdByQuery = query(
     collection(db, 'conversations'),
-    where('participantIds', 'array-contains', uid),
+    where('createdBy', '==', uid),
+    orderBy('updatedAt', 'desc')
+  )
+  const ownerQuery = query(
+    collection(db, 'conversations'),
+    where('listingOwnerUid', '==', uid),
     orderBy('updatedAt', 'desc')
   )
 
-  conversationsUnsubscribe = onSnapshot(conversationsQuery, (snapshot) => {
-    const currentConversations = []
+  createdByConversationsUnsubscribe = onSnapshot(createdByQuery, (snapshot) => {
+    const entries = []
     snapshot.forEach((conversationDoc) => {
-      const conversation = conversationDoc.data()
-      currentConversations.push({
-        id: conversationDoc.id,
-        listingId: conversation.listingId || '',
-        listingAddress: conversation.listingAddress || 'Listing',
-        listingOwnerName: conversation.listingOwnerName || 'Pet owner',
-        participantIds: Array.isArray(conversation.participantIds) ? conversation.participantIds : [],
-        createdBy: conversation.createdBy || '',
-        updatedAt: conversation.updatedAt || null,
-        updatedAtLabel: formatDate(conversation.updatedAt),
-        lastMessageText: conversation.lastMessageText || '',
-      })
+      entries.push(normalizeConversation(conversationDoc))
     })
+    createdByConversationsCache = entries
+    applyMergedConversations()
+  }, handleConversationStreamError)
 
-    conversations.value = currentConversations
-    conversationsReady.value = true
+  ownerConversationsUnsubscribe = onSnapshot(ownerQuery, (snapshot) => {
+    const entries = []
+    snapshot.forEach((conversationDoc) => {
+      entries.push(normalizeConversation(conversationDoc))
+    })
+    ownerConversationsCache = entries
+    applyMergedConversations()
+  }, handleConversationStreamError)
+}
 
-    if (!currentConversations.length) {
-      stopMessagesListener()
-      messages.value = []
-      selectedConversationId.value = ''
-      selectedConversationMeta.value = null
-      return
-    }
+async function prepareAuthForFirestore(user) {
+  try {
+    const token = await user.getIdToken()
+    console.debug('[ChatPanel] Auth token ready for Firestore', {
+      authUid: auth.currentUser?.uid || null,
+      callbackUid: user.uid,
+      hasToken: Boolean(token),
+    })
+  } catch (error) {
+    console.error('Failed to resolve auth token before loading conversations:', error)
+    statusText.value = 'Authentication is not ready. Please try again.'
+    authReadyForFirestore.value = false
+    return false
+  }
 
-    if (!selectedConversationId.value) {
-      selectConversation(currentConversations[0])
-      return
-    }
+  if (auth.currentUser?.uid !== user.uid) {
+    authReadyForFirestore.value = false
+    return false
+  }
 
-    const stillSelected = currentConversations.find((entry) => entry.id === selectedConversationId.value)
-    if (!stillSelected) {
-      selectConversation(currentConversations[0])
-      return
-    }
-
-    selectedConversationMeta.value = stillSelected
-  }, (error) => {
-    console.error('Failed to stream conversations:', error)
-    statusText.value = 'Failed to load conversations.'
-    conversationsReady.value = true
-  })
+  authReadyForFirestore.value = true
+  hasRetriedConversationStreamAfterAuthRefresh.value = false
+  return true
 }
 
 function subscribeToMessages(conversationId) {
@@ -391,22 +489,36 @@ function readStartPayloadFromRoute() {
 
 async function maybeStartConversationFromRoute() {
   const currentUser = getCurrentUser()
-  if (!currentUser) {
+  if (!currentUser || !authReadyForFirestore.value) {
+    console.debug('[ChatPanel] Skipping route-start; auth not ready', {
+      hasCurrentUser: Boolean(currentUser),
+      authReadyForFirestore: authReadyForFirestore.value,
+      authUid: auth.currentUser?.uid || null,
+      cachedUid: currentUser?.uid || null,
+      routeQuery: route.query,
+    })
     return
   }
 
   const startPayload = readStartPayloadFromRoute()
   if (!startPayload) {
+    console.debug('[ChatPanel] No route-start payload present', { routeQuery: route.query })
     return
   }
 
   const routeStartKey = `${startPayload.listingId}__${startPayload.listingOwnerUid}`
   if (lastStartedFromRouteKey.value === routeStartKey) {
+    console.debug('[ChatPanel] Route-start skipped; already started', { routeStartKey })
     return
   }
 
-  lastStartedFromRouteKey.value = routeStartKey
+  console.debug('[ChatPanel] Attempting route-start conversation', {
+    authUid: auth.currentUser?.uid || null,
+    cachedUid: currentUser.uid,
+    startPayload,
+  })
   await ensureConversation(startPayload)
+  lastStartedFromRouteKey.value = routeStartKey
   router.replace({ path: '/chat' }).catch(() => {})
 }
 
@@ -416,6 +528,7 @@ onMounted(() => {
   authUnsubscribe = auth.onAuthStateChanged((user) => {
     setCurrentUser(user || null)
     isLoggedIn.value = Boolean(user)
+    authReadyForFirestore.value = false
     statusText.value = ''
 
     stopMessagesListener()
@@ -425,16 +538,34 @@ onMounted(() => {
 
     if (!user) {
       lastStartedFromRouteKey.value = ''
+      hasRetriedConversationStreamAfterAuthRefresh.value = false
       stopConversationsListener()
       resetChatState()
       return
     }
 
-    subscribeToConversations(user.uid)
-    maybeStartConversationFromRoute().catch((error) => {
-      console.error('Failed to start route conversation:', error)
-      statusText.value = 'Failed to start chat.'
-    })
+    prepareAuthForFirestore(user)
+      .then((ready) => {
+        if (!ready || auth.currentUser?.uid !== user.uid) {
+          console.debug('[ChatPanel] Conversation subscribe skipped after auth prep', {
+            ready,
+            authUid: auth.currentUser?.uid || null,
+            callbackUid: user.uid,
+          })
+          return
+        }
+
+        console.debug('[ChatPanel] Subscribing to conversations', {
+          authUid: auth.currentUser?.uid || null,
+          subscribeUid: user.uid,
+        })
+        subscribeToConversations(user.uid)
+        return maybeStartConversationFromRoute()
+      })
+      .catch((error) => {
+        console.error('Failed to initialize chat session:', error)
+        statusText.value = 'Failed to load chat.'
+      })
   })
 })
 

@@ -13,7 +13,7 @@ service cloud.firestore {
 
     function isConversationParticipant(data) {
       return isSignedIn()
-        && data.keys().hasAll(['participantIds'])
+        && data != null
         && data.participantIds is list
         && request.auth.uid in data.participantIds;
     }
@@ -122,7 +122,20 @@ service cloud.firestore {
         && request.resource.data.lastMessageText.size() <= 1000
         && request.resource.data.lastMessageSenderId is string;
 
-      allow read: if isConversationParticipant(resource.data);
+      allow get: if isSignedIn()
+        && (
+          resource == null
+          || (
+            resource.data.participantIds is list
+            && request.auth.uid in resource.data.participantIds
+          )
+        );
+
+      allow list: if isSignedIn()
+        && (
+          resource.data.createdBy == request.auth.uid
+          || resource.data.listingOwnerUid == request.auth.uid
+        );
 
       allow update: if canExchangeMessages(resource.data)
         && request.resource.data.keys().hasOnly([
@@ -155,11 +168,13 @@ service cloud.firestore {
     }
 
     match /conversations/{conversationId}/messages/{messageId} {
-      allow read: if isConversationParticipant(
-        get(/databases/$(database)/documents/conversations/$(conversationId)).data
-      );
+      allow read: if exists(/databases/$(database)/documents/conversations/$(conversationId))
+        && isConversationParticipant(
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data
+        );
 
-      allow create: if isConversationParticipant(
+      allow create: if exists(/databases/$(database)/documents/conversations/$(conversationId))
+        && isConversationParticipant(
           get(/databases/$(database)/documents/conversations/$(conversationId)).data
         )
         && canExchangeMessages(
