@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   addDoc,
   collection,
@@ -34,6 +34,7 @@ const isSelectedPeerBlockingMe = ref(false)
 const blockStateReady = ref(false)
 const authReadyForFirestore = ref(false)
 const hasRetriedConversationStreamAfterAuthRefresh = ref(false)
+const messagesContainerRef = ref(null)
 const route = useRoute()
 const router = useRouter()
 
@@ -103,6 +104,7 @@ function normalizeConversation(conversationDoc) {
     listingId: conversation.listingId || '',
     listingAddress: conversation.listingAddress || 'Listing',
     listingOwnerName: conversation.listingOwnerName || 'Pet owner',
+    createdByName: conversation.createdByName || 'User',
     listingOwnerUid: conversation.listingOwnerUid || '',
     participantIds: Array.isArray(conversation.participantIds) ? conversation.participantIds : [],
     createdBy: conversation.createdBy || '',
@@ -272,6 +274,14 @@ function subscribeToMessages(conversationId) {
   })
 }
 
+function scrollMessagesToBottom() {
+  const messagesContainer = messagesContainerRef.value
+  if (!messagesContainer) {
+    return
+  }
+  messagesContainer.scrollTop = messagesContainer.scrollHeight
+}
+
 async function ensureConversation(startPayload) {
   const currentUser = getCurrentUser()
   if (!currentUser) {
@@ -303,6 +313,7 @@ async function ensureConversation(startPayload) {
       listingAddress: startPayload.listingAddress || 'Listing',
       listingOwnerUid: startPayload.listingOwnerUid,
       listingOwnerName: startPayload.listingOwnerName || 'Pet owner',
+      createdByName: currentUser.displayName || currentUser.email || 'User',
       participantIds: [currentUser.uid, startPayload.listingOwnerUid].sort(),
       createdBy: currentUser.uid,
       createdAt: serverTimestamp(),
@@ -418,6 +429,14 @@ const chatLockedByBlock = computed(() =>
 const blockActionLabel = computed(() =>
   isSelectedPeerBlockedByMe.value ? 'Unblock User' : 'Block User'
 )
+
+function getConversationPeerName(conversation) {
+  if (conversation.createdBy === currentUid.value) {
+    return conversation.listingOwnerName || 'User'
+  }
+
+  return conversation.createdByName || 'User'
+}
 
 async function refreshBlockState() {
   const currentUser = getCurrentUser()
@@ -591,6 +610,22 @@ watch(
   { immediate: true }
 )
 
+watch(
+  () => messages.value.length,
+  async () => {
+    await nextTick()
+    scrollMessagesToBottom()
+  }
+)
+
+watch(
+  () => selectedConversationId.value,
+  async () => {
+    await nextTick()
+    scrollMessagesToBottom()
+  }
+)
+
 onBeforeUnmount(() => {
   window.removeEventListener('p2h:start-chat', handleStartChat)
   stopMessagesListener()
@@ -624,7 +659,8 @@ onBeforeUnmount(() => {
           :class="{ 'is-link is-light': selectedConversationId === conversation.id }"
           @click="selectConversation(conversation)"
         >
-          <span class="chat-conversation-title">{{ conversation.listingAddress }}</span>
+          <span class="chat-conversation-title">{{ getConversationPeerName(conversation) }}</span>
+          <span class="chat-conversation-location">{{ conversation.listingAddress }}</span>
           <span class="chat-conversation-preview">{{ conversation.lastMessageText || 'No messages yet' }}</span>
         </button>
       </aside>
@@ -653,7 +689,7 @@ onBeforeUnmount(() => {
           </p>
         </div>
 
-        <div class="chat-messages">
+        <div ref="messagesContainerRef" class="chat-messages">
           <p v-if="selectedConversationId && !messagesReady" class="is-size-7">Loading messages...</p>
           <p v-else-if="selectedConversationId && !messages.length" class="is-size-7">No messages yet.</p>
 
@@ -679,6 +715,7 @@ onBeforeUnmount(() => {
               rows="3"
               placeholder="Type your message"
               :disabled="!selectedConversationId || chatLockedByBlock"
+              @keydown.enter.exact.prevent="sendMessage"
             />
           </div>
         </div>
@@ -732,6 +769,15 @@ onBeforeUnmount(() => {
 .chat-conversation-preview {
   font-size: 0.8rem;
   color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.chat-conversation-location {
+  font-size: 0.78rem;
+  color: #5f5f5f;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

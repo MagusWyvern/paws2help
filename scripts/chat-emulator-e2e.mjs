@@ -94,6 +94,7 @@ async function main() {
     listingAddress: 'Test Address',
     listingOwnerUid: receiverUser.uid,
     listingOwnerName: 'Receiver',
+    createdByName: 'Sender',
     participantIds: [senderUser.uid, receiverUser.uid].sort(),
     createdBy: senderUser.uid,
     createdAt: serverTimestamp(),

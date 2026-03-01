@@ -85,6 +85,7 @@ service cloud.firestore {
           'listingAddress',
           'listingOwnerUid',
           'listingOwnerName',
+          'createdByName',
           'participantIds',
           'createdBy',
           'createdAt',
@@ -97,6 +98,7 @@ service cloud.firestore {
           'listingAddress',
           'listingOwnerUid',
           'listingOwnerName',
+          'createdByName',
           'participantIds',
           'createdBy',
           'createdAt',
@@ -118,6 +120,8 @@ service cloud.firestore {
         && request.resource.data.listingAddress is string
         && request.resource.data.listingOwnerUid is string
         && request.resource.data.listingOwnerName is string
+        && request.resource.data.createdByName is string
+        && request.resource.data.createdByName.size() <= 120
         && request.resource.data.lastMessageText is string
         && request.resource.data.lastMessageText.size() <= 1000
         && request.resource.data.lastMessageSenderId is string;
@@ -143,6 +147,7 @@ service cloud.firestore {
           'listingAddress',
           'listingOwnerUid',
           'listingOwnerName',
+          'createdByName',
           'participantIds',
           'createdBy',
           'createdAt',
@@ -157,6 +162,7 @@ service cloud.firestore {
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.listingOwnerUid == resource.data.listingOwnerUid
         && request.resource.data.listingOwnerName == resource.data.listingOwnerName
+        && request.resource.data.createdByName == resource.data.createdByName
         && request.resource.data.updatedAt is timestamp
         && request.resource.data.lastMessageText is string
         && request.resource.data.lastMessageText.size() <= 1000
