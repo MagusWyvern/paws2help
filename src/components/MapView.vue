@@ -68,13 +68,22 @@ const selectedListingRows = computed(() => {
     return rows.filter((row) => typeof row.value === 'string' ? row.value.trim().length > 0 : Boolean(row.value))
 })
 
-const canMessageSelectedOwner = computed(() => {
-    const currentUser = getCurrentUser()
-    if (!currentUser || !selectedListing.value?.ownerUid) {
+const canShowSelectedChatAction = computed(() => {
+    if (!selectedListing.value?.ownerUid) {
         return false
     }
+
+    const currentUser = getCurrentUser()
+    if (!currentUser) {
+        return true
+    }
+
     return currentUser.uid !== selectedListing.value.ownerUid
 })
+
+const selectedChatActionLabel = computed(() =>
+    isLoggedIn.value ? 'Message Owner' : 'Sign in to Message Owner'
+)
 
 const selectedListingIntentLabel = computed(() =>
     selectedListing.value
@@ -484,15 +493,16 @@ onBeforeUnmount(() => {
                 </p>
 
                 <button
-                    v-if="canMessageSelectedOwner"
+                    v-if="canShowSelectedChatAction"
                     class="button is-link is-small mt-2"
                     @click="startChatForSelectedListing"
                 >
-                    Message Owner
+                    {{ selectedChatActionLabel }}
                 </button>
                 <button
                     v-if="isLoggedIn"
-                    class="button is-small is-light mt-2 ml-2"
+                    class="button is-small is-light mt-2"
+                    :class="{ 'ml-2': canShowSelectedChatAction }"
                     @click="shareSelectedListing"
                 >
                     Share Listing
