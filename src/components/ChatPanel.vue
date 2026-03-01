@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   addDoc,
   collection,
@@ -13,6 +13,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { useRoute, useRouter } from 'vue-router'
 import { auth, db } from '../firebase'
 import { getCurrentUser, setCurrentUser } from '../authenticateUser'
 
@@ -25,6 +26,10 @@ const statusText = ref('')
 const conversationsReady = ref(false)
 const messagesReady = ref(false)
 const selectedConversationMeta = ref(null)
+const lastStartedFromRouteKey = ref('')
+const lastSentAtByConversation = ref({})
+const route = useRoute()
+const router = useRouter()
 
 let authUnsubscribe = null
 let conversationsUnsubscribe = null
@@ -58,6 +63,7 @@ function resetChatState() {
   statusText.value = ''
   conversationsReady.value = false
   messagesReady.value = false
+  lastSentAtByConversation.value = {}
 }
 
 function stopConversationsListener() {
@@ -226,6 +232,22 @@ async function sendMessage() {
     return
   }
 
+  const lastSentAt = lastSentAtByConversation.value[selectedConversationId.value] || 0
+  if (Date.now() - lastSentAt < 3000) {
+    statusText.value = 'Please wait a few seconds before sending another message.'
+    return
+  }
+
+  const lastMessage = messages.value[messages.value.length - 1]
+  if (
+    lastMessage &&
+    lastMessage.senderId === currentUser.uid &&
+    lastMessage.text?.trim() === trimmedMessage
+  ) {
+    statusText.value = 'You already sent this message.'
+    return
+  }
+
   const messageCollection = collection(db, 'conversations', selectedConversationId.value, 'messages')
   const senderName = currentUser.displayName || currentUser.email || 'User'
 
@@ -243,6 +265,10 @@ async function sendMessage() {
       lastMessageSenderId: currentUser.uid,
     })
 
+    lastSentAtByConversation.value = {
+      ...lastSentAtByConversation.value,
+      [selectedConversationId.value]: Date.now(),
+    }
     draftMessage.value = ''
     statusText.value = ''
   } catch (error) {
@@ -256,6 +282,42 @@ function handleStartChat(event) {
     console.error('Failed to initialize conversation:', error)
     statusText.value = 'Failed to start chat.'
   })
+}
+
+function readStartPayloadFromRoute() {
+  const listingId = typeof route.query.listingId === 'string' ? route.query.listingId.trim() : ''
+  const listingOwnerUid = typeof route.query.listingOwnerUid === 'string' ? route.query.listingOwnerUid.trim() : ''
+  if (!listingId || !listingOwnerUid) {
+    return null
+  }
+
+  return {
+    listingId,
+    listingOwnerUid,
+    listingAddress: typeof route.query.listingAddress === 'string' ? route.query.listingAddress : '',
+    listingOwnerName: typeof route.query.listingOwnerName === 'string' ? route.query.listingOwnerName : '',
+  }
+}
+
+async function maybeStartConversationFromRoute() {
+  const currentUser = getCurrentUser()
+  if (!currentUser) {
+    return
+  }
+
+  const startPayload = readStartPayloadFromRoute()
+  if (!startPayload) {
+    return
+  }
+
+  const routeStartKey = `${startPayload.listingId}__${startPayload.listingOwnerUid}`
+  if (lastStartedFromRouteKey.value === routeStartKey) {
+    return
+  }
+
+  lastStartedFromRouteKey.value = routeStartKey
+  await ensureConversation(startPayload)
+  router.replace({ path: '/chat' }).catch(() => {})
 }
 
 onMounted(() => {
@@ -272,14 +334,30 @@ onMounted(() => {
     selectedConversationMeta.value = null
 
     if (!user) {
+      lastStartedFromRouteKey.value = ''
       stopConversationsListener()
       resetChatState()
       return
     }
 
     subscribeToConversations(user.uid)
+    maybeStartConversationFromRoute().catch((error) => {
+      console.error('Failed to start route conversation:', error)
+      statusText.value = 'Failed to start chat.'
+    })
   })
 })
+
+watch(
+  () => route.query,
+  () => {
+    maybeStartConversationFromRoute().catch((error) => {
+      console.error('Failed to start route conversation:', error)
+      statusText.value = 'Failed to start chat.'
+    })
+  },
+  { deep: true }
+)
 
 onBeforeUnmount(() => {
   window.removeEventListener('p2h:start-chat', handleStartChat)

@@ -197,14 +197,15 @@ function startChatForSelectedListing() {
         return
     }
 
-    window.dispatchEvent(new CustomEvent('p2h:start-chat', {
-        detail: {
+    router.push({
+        path: '/chat',
+        query: {
             listingId: selectedListing.value.id,
             listingAddress: selectedListing.value.addressName,
             listingOwnerUid: selectedListing.value.ownerUid,
             listingOwnerName: selectedListing.value.creatorName || 'Pet owner',
         },
-    }))
+    })
 }
 
 function buildListingShareUrl(listingId) {
@@ -259,14 +260,15 @@ function onPopupOpen(event) {
             return
         }
 
-        window.dispatchEvent(new CustomEvent('p2h:start-chat', {
-            detail: {
+        router.push({
+            path: '/chat',
+            query: {
                 listingId: startChatButton.dataset.listingId || '',
                 listingAddress: startChatButton.dataset.listingAddress || '',
                 listingOwnerUid: ownerUid,
                 listingOwnerName: startChatButton.dataset.listingOwnerName || 'Pet owner',
             },
-        }))
+        })
         mymap.closePopup()
     }, { once: true })
 }
